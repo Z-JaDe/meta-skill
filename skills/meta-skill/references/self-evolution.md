@@ -2,159 +2,136 @@
 
 **用 `meta-skill` 创建新的 `meta-skill` 替代自己**
 
-## 何时触发自演进
+## 触发条件
 
-用户主动发起，无需描述问题：
+用户指令："优化 meta-skill"、"meta-skill 有问题"、"改进这个 Skill"
 
-| 用户指令 | 行动 |
-|---------|------|
-| "优化 meta-skill" | 启动自演进流程 |
-| "meta-skill 有问题" | 启动自演进流程 |
-| "改进这个 Skill" | 启动自演进流程 |
+## 核心概念
 
-## 演进流程（迭代 + 人工确认）
+**一次迭代** = 基于当前 SKILL.md 生成新版草案 → 创建 3 个测试 Skill 验证 → TDD 发现 SKILL.md 的漏洞 → 修补 SKILL.md 草案 → 记录到 log.md
+
+**核心原则**：
+- 测试 Skill 用于暴露 SKILL.md 的漏洞，是手段不是目的
+- 每次迭代使用不同的 3 个测试 Skill（避免路径依赖）
+- 每次迭代结束时，SKILL.md 草案已修复当轮发现的问题
+
+## 演进流程
 
 ```
-1. 用户发起自演进
+1. 用户发起自演进（可指定迭代次数，默认 3 次）
    ↓
-2. 创建 beta 分支：git checkout -b evolution-beta
+2. 确定版本号（如 v1.1），创建 beta 分支：git checkout -b evolution-v{版本号}
    ↓
-3. 创建演进记录文件夹：evolutions/v1.1/
+3. 创建演进记录文件夹：evolutions/v{版本号}/
    ↓
-4. 子 Agent 迭代 N 次（TDD 流程发现问题）：
-   迭代 1: 生成新版 Skill → 用新版创建测试 Skill → 发现问题
-   迭代 2: 修补问题 → 生成新版 Skill → 再测试 → 发现新问题
-   ...
-   迭代 N: 所有测试通过，无新问题
+4. 【检查外部测试集】确认 `.repo` 目录存在
+   - 如不存在或为空 → **终止自演进**
+   - 如存在 → 从 `.repo` 中选取 5-10 个有代表性的 Skill（覆盖不同领域）作为外部测试集
    ↓
-5. 子 Agent 自评 → 达到验收标准 → 提交 PR
+5. 子 Agent 迭代 N 次（或提前终止）：
+   每次迭代（iteration-1, iteration-2...）：
+   a) 生成草案：
+      - iteration-1: 基于原始 skills/meta-skill/SKILL.md 生成草案
+      - iteration-2+: 基于 iteration-(N-1) 修补后的 SKILL.md 草案生成新版
+      - 输出：evolutions/v{版本号}/iteration-N/SKILL.md
+   b) 创建测试：
+      - 创建 3 个测试 Skill 到 evolutions/v{版本号}/iteration-N/test-skill-{a,b,c}/
+      - 要求：覆盖不同领域，与之前迭代不重复
+   c) TDD 验证：
+      - 用新版 SKILL.md 草案创建测试 Skill
+      - 如失败 → 记录漏洞 → 修补 SKILL.md 草案 → 重新验证
+   d) 记录：
+      - 填写 evolutions/v{版本号}/iteration-N/log.md
+      - 如发现新漏洞类型 → 创建回归用例 tests/regression/case-XXX-*.md
    ↓
-6. 【人工确认】用户评审 + 批准
+6. 达到指定次数 OR 提前终止：
+   - 提前终止：连续 2 次迭代未发现新漏洞类型
+   - 判断：如 iteration-N 和 iteration-(N+1) 均无新漏洞 → 在 iteration-(N+1) 后终止
+   - 示例：iteration-1 有漏洞，iteration-2 和 iteration-3 无 → 在 iteration-3 后终止
    ↓
-7. 合并到主分支 → git tag v1.1
+7. 【子 Agent 自评】
+   - 运行 tests/regression/ 所有回归用例 → 必须全部通过
+   - 用新版 SKILL.md 创建外部测试集中的 Skill → 必须全部成功
+   - 确认验收标准 → 提交 PR
+   ↓
+8. 【人工确认】用户评审变更 + 批准
+   ↓
+9. 合并到主分支 → git tag v{版本号} → 更新 skills/meta-skill/SKILL.md
 ```
 
-## Git 工作流
+## 终止条件
 
-```bash
-# 1. 创建 beta 分支
-git checkout -b evolution-beta
-
-# 2. 创建演进记录文件夹
-mkdir evolutions/v1.1
-
-# 3. 子 Agent 迭代 N 次
-# 每次迭代：
-# - 完整生成一版新的 SKILL.md
-# - 用新版 meta-skill 创建 3 个测试 Skill
-# - TDD 流程发现问题 → 下一次迭代修补
-# - 迭代记录写入 evolutions/v1.1/iteration-log.md
-
-# 4. 达到验收标准后提交 PR
-git add .
-git commit -m "v1.1: 补充 XX 规则"
-git push origin evolution-beta
-# 创建 Pull Request
-
-# 5. 【人工确认】
-# - 用户评审变更 + 查看 iteration-log.md
-# - 确认测试通过
-# - 批准合并
-
-# 6. 合并到主分支
-git checkout main
-git merge evolution-beta
-git tag -a v1.1 -m "补充 XX 规则"
-git push origin v1.1
-
-# 7. 删除 beta 分支
-git branch -d evolution-beta
-```
-
-## 迭代日志格式
-
-每次自演进创建独立文件夹 `evolutions/v1.1/iteration-log.md`：
-
-```markdown
-# Evolution v1.1
-
-**触发**：用户发起自演进
-
----
-
-## Iteration 1
-
-**变更**：
-- 添加 Rules #9: XX 规则
-
-**测试创建 3 个 Skill**：
-- test-skill-a: ❌ 失败 - 缺少 XX
-- test-skill-b: ✅ 通过
-- test-skill-c: ❌ 失败 - XX 歧义
-
-**发现问题**：
-- 问题 1: Rules #9 不够明确
-- 问题 2: 缺少 XX 场景的覆盖
-
----
-
-## Iteration 2
-
-**变更**：
-- 修补 Rules #9: 添加明确说明
-- 补充 Anti-Rationalization
-
-**测试创建 3 个 Skill**：
-- test-skill-a: ✅ 通过
-- test-skill-b: ✅ 通过
-- test-skill-c: ✅ 通过
-
-**发现问题**：无
-
----
-
-## 结论
-
-所有测试通过，共迭代 2 次，准备提交 PR
-```
-
-## 验收标准（子 Agent 自评）
-
-子 Agent 在提交 PR 前确认：
-
-- [ ] `tests/regression/` 所有回归测试通过
-- [ ] `tests/evolution/` 新增测试通过
-- [ ] 用新版 meta-skill 成功创建 3 个测试 Skill
-- [ ] Token 效率符合要求（getting-started <150 词，高频 <200 词）
-- [ ] `evolutions/v1.1/iteration-log.md` 记录完整
-- [ ] 变更有清晰的 commit message
-
-## 人工确认清单
-
-用户批准前确认：
-
-- [ ] 理解并同意所有变更
-- [ ] 确认问题被解决
-- [ ] 确认没有引入退化
-- [ ] 确认版本号正确（semver）
-- [ ] 查看 `iteration-log.md` 了解演进过程
+- ✅ 达到指定迭代次数（默认 3 次）
+- ✅ **提前终止**：连续 2 次迭代未发现新漏洞类型
+- ⚠️ 发现架构级问题（SKILL.md 结构需要重构） → 升级版本号（minor → major）
 
 ## 目录结构
 
 ```
 meta-skill/
+├── .repo/                       # 外部 Skill 仓库（已忽略）
 ├── evolutions/
 │   ├── TEMPLATE.md
-│   └── v1.1/
-│       └── iteration-log.md
-├── skills/
-│   └── meta-skill/
-│       ├── SKILL.md
-│       └── references/
-│           └── self-evolution.md
-└── tests/
-    ├── evolution/
-    │   └── README.md
-    └── regression/
-        └── README.md
+│   └── v{版本号}/
+│       └── iteration-N/
+│           ├── test-skill-{a,b,c}/  # 测试 Skill
+│           └── log.md               # 迭代记录
+├── skills/meta-skill/
+│   ├── SKILL.md                 # 当前版本（迭代完成后更新）
+│   └── references/self-evolution.md
+└── tests/regression/
+    ├── README.md
+    └── case-001-*.md            # 回归用例
 ```
+
+**关键说明**：
+- **版本号**：自演进开始时确定（小改动→v1.1，架构重构→v2.0）
+- **回归用例**：连续编号，发现新漏洞类型时创建
+- **最终版本**：迭代完成后直接更新 `skills/meta-skill/SKILL.md`
+
+## 回归测试用例管理
+
+**原则**：每个用例代表一个方向/场景，不重复；发现新漏洞类型时创建回归用例；定期清理重复。
+
+## 迭代日志格式
+
+`evolutions/v{版本号}/iteration-N/log.md`：
+
+```markdown
+# Iteration N
+
+**输入版本**：v{版本号}-draft-N
+
+| Skill | 触发条件 | TDD 结果 | 问题 |
+|-------|---------|---------|------|
+| test-skill-a | "XXX" | ❌ → ✅ | |
+| test-skill-b | "XXX" | ✅ | - |
+| test-skill-c | "XXX" | ❌ → ✅ | |
+
+## 发现的问题（SKILL.md 草案的漏洞）
+
+1.
+
+## REFACTOR 行动（修补 SKILL.md 草案）
+
+- [ ]
+
+## 回归用例创建
+
+- [ ] case-0XX-*.md: [说明]
+```
+
+## 验收标准
+
+- [ ] 完成指定迭代次数 **或** 提前终止
+- [ ] 每次迭代的 3 个测试 Skill 全部通过 TDD
+- [ ] 新漏洞类型已创建回归用例
+- [ ] `tests/regression/` 所有回归用例通过
+- [ ] 外部测试集全部通过（用新版 SKILL.md 创建这些 Skill，验证能成功）
+- [ ] Token 效率符合要求（getting-started <150 词，高频 <200 词）
+- [ ] 迭代记录完整
+- [ ] 变更有清晰的 commit message
+
+## 测试 Skill 设计要求
+
+每次迭代创建的 3 个测试 Skill 应覆盖不同领域，模拟真实用户需求，与之前迭代不重复。

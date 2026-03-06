@@ -22,7 +22,7 @@ description: Use when creating or modifying a Skill
 |------|------|
 | 创建新 Skill | **提问澄清**（定位、命名、目录） → TDD |
 | 迭代当前 Skill | **简要澄清** → TDD |
-| 自演进 | 用户发起 → 子 Agent 在 beta 分支 TDD 迭代 N 次 → 人工确认 → 合并主分支 |
+| 自演进 | 用户发起 → 确定版本号 → 创建 beta 分支 → 迭代 N 次 → 自评（回归测试 + 外部测试集） → 人工确认 → 合并主分支 → git tag（见 `references/self-evolution.md`） |
 
 ## Core Pattern
 
@@ -66,7 +66,7 @@ DISCOVERY → RED → GREEN → REFACTOR
 6. **评估循环** - 3-5 测试用例，并行运行 baseline，用数据迭代
 7. **漏洞封闭** - 添加 "spirit vs letter" 阻断论证
 8. **目录规范** - `skill-name/SKILL.md`，仅小写字母、数字、连字符
-9. **避免二义性** - 术语、边界、示例清晰无歧义
+9. **避免二义性** - 术语、边界、示例清晰无歧义，避免冗余重复
 
 ## Anti-Rationalization
 

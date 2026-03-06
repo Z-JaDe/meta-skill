@@ -23,16 +23,17 @@ DISCOVERY → RED → GREEN → REFACTOR
 
 ```
 meta-skill/
+├── .repo/                       # 外部 Skill 仓库（已忽略）
 ├── skills/
-│   └── meta-skill/        # 元技能本身
+│   └── meta-skill/              # 元技能本身
 │       ├── SKILL.md
 │       └── references/
 │           └── self-evolution.md
-├── evolutions/            # 自演进记录
+├── evolutions/                  # 自演进记录
 │   └── TEMPLATE.md
 └── tests/
-    ├── evolution/         # 演进测试
-    └── regression/        # 回归测试
+    └── regression/              # 回归测试
+        └── README.md
 ```
 
 ## 自演进
