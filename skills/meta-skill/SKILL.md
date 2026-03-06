@@ -14,7 +14,6 @@ description: Use when creating or modifying a Skill
 ## When to Use
 - 创建新 Skill
 - 修改现有 Skill（包括 description）
-- **自演进** → 用户发现本 Skill 不足时，用它自己的规则优化它（见 `references/self-evolution.md`）
 
 ## Intent Recognition
 
@@ -22,7 +21,6 @@ description: Use when creating or modifying a Skill
 |------|------|
 | 创建新 Skill | **提问澄清**（定位、命名、目录） → TDD |
 | 迭代当前 Skill | **简要澄清** → TDD |
-| 自演进 | 用户发起 → 确定版本号 → 创建 beta 分支 → 迭代 N 次 → 自评（回归测试 + 外部测试集） → 人工确认 → 合并主分支 → git tag（见 `references/self-evolution.md`） |
 
 ## Core Pattern
 
@@ -45,16 +43,28 @@ DISCOVERY → RED → GREEN → REFACTOR
 **命名&目录**：如用户未指定，给出选项供选择：
 - **名字建议**：`skill-name`（小写、连字符、语义化）
 - **目录**：`skills/{name}/SKILL.md`
-- **语言**：优先与用户交流语言一致，可选中文/英文
+- **语言**：优先与用户交流语言一致
 - **Metadata**：`name`、`description`（第三人称触发条件）
 
 ### Phase 2: TDD（实现验证）
 
-| Phase | Action |
-|-------|--------|
-| **RED** | 无 Skill 运行压力场景 → 记录失败行为 + rationalizations |
-| **GREEN** | 写最小 Skill 解决该失败 |
-| **REFACTOR** | 发现新漏洞 → 修补 → 重新验证 |
+**RED** - 模拟用户请求创建 Skill（不使用 meta-skill），记录问题：
+```
+用户请求："创建一个处理 PDF 的 Skill"
+当前行为：无 Skill 触发 → 通用回复
+失败点：无法识别"处理 PDF"意图 → 需要 description: "Use when [处理 PDF]"
+```
+
+**GREEN** - 写最小 SKILL.md 解决该失败：
+```yaml
+description: "Use when analyzing or extracting content from PDF files"
+```
+
+**REFACTOR** - 用边界案例验证并修补：
+```
+测试："创建 PDF"→ 不应触发（这是生成，不是分析）
+修补：description → "Use when analyzing existing PDF files (not creating)"
+```
 
 ## Rules
 
@@ -64,7 +74,7 @@ DISCOVERY → RED → GREEN → REFACTOR
 4. **渐进式披露** - Metadata → SKILL.md → Bundled Resources
 5. **Token 效率** - getting-started <150 词，高频 <200 词
 6. **评估循环** - 3-5 测试用例，并行运行 baseline，用数据迭代
-7. **漏洞封闭** - 添加 "spirit vs letter" 阻断论证
+7. **边界案例验证** - 用"相似但不同"的场景测试 description 是否准确
 8. **目录规范** - `skill-name/SKILL.md`，仅小写字母、数字、连字符
 9. **避免二义性** - 术语、边界、示例清晰无歧义，避免冗余重复
 
@@ -74,9 +84,6 @@ DISCOVERY → RED → GREEN → REFACTOR
 |--------|---------|
 | "太简单不用测试" | 简单代码也会挂，测试只需 30 秒 |
 | "只是小更新" | 小更新也会引入漏洞 |
-
-## CSO Keywords
-errors, flaky, hang, timeout, race condition, cleanup, teardown, zombie, pollution
 
 ## Common Mistakes
 
@@ -101,6 +108,11 @@ Q: "输出？" → 结构化内容
 Q: "边界？" → "创建 PDF"（生成）、"打印 PDF"不触发
 ```
 
-**TDD 流程**：RED → GREEN → REFACTOR
+**TDD 流程**：
+```
+RED: 无 Skill → 无法识别"处理 PDF"意图
+GREEN: description: "Use when analyzing PDF files"
+REFACTOR: 边界测试"创建 PDF"→ 修改为"analyzing existing PDFs (not creating)"
+```
 
 **输出**：`skills/pdf/SKILL.md`
