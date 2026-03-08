@@ -1,118 +1,155 @@
 ---
 name: meta-skill
-description: Use when creating or modifying a Skill
+description: Use when creating new skills from scratch or improving existing skills. Orchestrates intent-discovery → TDD → blind comparison → optimization.
 ---
 
 # Meta Skill
 
 ## Overview
 
-**核心原则**：测试不通过，禁止创建或更新 Skill。
+编排技能创建/更新流程。**纯调度，不执行**。
 
-**重要说明**：本 Skill 用于创建/修改其他 Skill，同时它本身也是创建 Skill 的最佳示例。
+**输入**: 模糊想法（创建）/ 现有技能 + 改进需求（更新）
 
-## When to Use
-- 创建新 Skill
-- 修改现有 Skill（包括 description）
+**输出**: 打包好的 .skill 文件
 
-## Intent Recognition
+**铁律**: `NO SKILL WITHOUT A FAILING TEST FIRST`（没有例外）
 
-| 意图 | 行动 |
-|------|------|
-| 创建新 Skill | **提问澄清**（定位、命名、目录） → TDD |
-| 迭代当前 Skill | **简要澄清** → TDD |
+---
 
 ## Core Pattern
 
-```
-DISCOVERY → RED → GREEN → REFACTOR
-```
-
-### Phase 1: DISCOVERY（渐进式提问）
-
-通过提问明确 Skill 要素：
-
-| 要素 | 问题示例 |
-|------|---------|
-| **触发条件** | "什么场景下应触发这个 Skill？用户会说什么？" |
-| **核心职责** | "它具体做什么？不做什么？" |
-| **输入信号** | "用户会提供什么信息/文件？" |
-| **输出行为** | "它应该执行什么操作/返回什么？" |
-| **边界案例** | "哪些情况容易混淆？不应触发？" |
-
-**命名&目录**：如用户未指定，给出选项供选择：
-- **名字建议**：`skill-name`（小写、连字符、语义化）
-- **目录**：`skills/{name}/SKILL.md`
-- **语言**：优先与用户交流语言一致
-- **Metadata**：`name`、`description`（第三人称触发条件）
-
-### Phase 2: TDD（实现验证）
-
-**RED** - 模拟用户请求创建 Skill（不使用 meta-skill），记录问题：
-```
-用户请求："创建一个处理 PDF 的 Skill"
-当前行为：无 Skill 触发 → 通用回复
-失败点：无法识别"处理 PDF"意图 → 需要 description: "Use when [处理 PDF]"
+```mermaid
+flowchart TD
+    Start[用户请求创建技能] --> P1[调度 intent-discovery]
+    P1 --> P2[类型判断]
+    P2 --> P3[调度 test-first]
+    P3 --> P4{RED-GREEN-REFACTOR 通过？}
+    P4 -->|否 | P3
+    P4 -->|是 | P5[Blind Comparison]
+    P5 --> P6{显著优于基线？}
+    P6 -->|否 | P3
+    P6 -->|是 | P7[调度 ai-doc-optimizer]
+    P7 --> P8[package_skill.py]
 ```
 
-**GREEN** - 写最小 SKILL.md 解决该失败：
-```yaml
-description: "Use when analyzing or extracting content from PDF files"
+---
+
+## Implementation
+
+### 阶段 1: 意图捕捉
+
+**调度**: `intent-discovery` — 渐进式提问澄清需求
+
+**确认事项**:
+- 技能名称和描述
+- 技能语言（与用户输入保持一致）
+- 输出目录：根据用户当前环境给出选项
+  - 个人目录：`~/.qwen/` / `~/.claude/` / `~/.cursor/`
+  - 项目目录：`./`
+- 需求定义（what/when/output/test）
+- 边界（in_scope/out_of_scope）
+- 技能类型
+
+**输出**:
+```json
+{
+  "skill_name": "kebab-case-name",
+  "description": "Use when [触发条件]",
+  "language": "zh-CN | en-US",
+  "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx",
+  "requirements": {"what": "...", "when": "...", "output": "...", "test": "..."},
+  "boundaries": {"in_scope": [], "out_of_scope": []},
+  "skill_type": "纪律强制型 | 技术技能型 | 模式型 | 参考型"
+}
 ```
 
-**REFACTOR** - 用边界案例验证并修补：
-```
-测试："创建 PDF"→ 不应触发（这是生成，不是分析）
-修补：description → "Use when analyzing existing PDF files (not creating)"
-```
+### 阶段 2: 技能类型判断
 
-## Rules
+| 类型 | 特征 | 测试方法 |
+|------|------|----------|
+| 纪律强制型 | 强制规则、有合规成本、可被合理化跳过 | 完整压力测试 |
+| 技术技能型 | how-to 指南、工具使用 | 简化测试 + 应用场景验证 |
+| 模式型 | 心智模型、决策框架 | 识别场景 + 反例测试 |
+| 参考型 | API/语法/工具文档 | 检索测试 + 应用测试 |
 
-1. **Iron Law** - 没有例外（"简单更新"也要测试）
-2. **Description = 触发条件** - 第三人称，不总结流程
-3. **原理 > 规则** - 解释 why，避免 ALWAYS/NEVER
-4. **渐进式披露** - Metadata → SKILL.md → Bundled Resources
-5. **Token 效率** - getting-started <150 词，高频 <200 词
-6. **评估循环** - 3-5 测试用例，并行运行 baseline，用数据迭代
-7. **边界案例验证** - 用"相似但不同"的场景测试 description 是否准确
-8. **目录规范** - `skill-name/SKILL.md`，仅小写字母、数字、连字符
-9. **避免二义性** - 术语、边界、示例清晰无歧义，避免冗余重复
+### 阶段 3: TDD 循环（RED-GREEN-REFACTOR）
 
-## Anti-Rationalization
+**调度**: `test-first` — 测试驱动开发
 
-| Excuse | Reality |
-|--------|---------|
-| "太简单不用测试" | 简单代码也会挂，测试只需 30 秒 |
-| "只是小更新" | 小更新也会引入漏洞 |
+**输出**: evals.json + SKILL.md 初稿
 
-## Common Mistakes
+| 阶段 | 操作 | 说明 |
+|------|------|------|
+| RED | 创建 evals.json → 运行子代理**不带技能** → 记录违反行为 | TDD: Watch it fail |
+| GREEN | 调度 `skill-format` 编写 SKILL.md → 运行子代理**带技能** → 确认遵守规则 | TDD: Watch it pass |
+| REFACTOR | 发现新漏洞 → 修订技能 → 泛化 + 精简 | 不过拟合测试用例 |
 
-| ❌ | ✅ |
-|---|---|
-| description 总结 workflow | description = "Use when [症状]" |
-| 批量创建不测试 | 一个失败 → 一个 Skill → 验证 |
-| 多语言稀释示例 | 单一完整可运行示例 |
-| 通用标签 helper1, step3 | 语义化命名 |
-| 只测"正常场景" | 压力场景：时间 + 沉没成本 + 疲惫 |
+**纪律强制型额外操作**:
+- RED: 调度 `anti-rationalization` 设计压力场景
+- GREEN: 调度 `anti-rationalization` 加固规则
 
-## Example: 创建 pdf Skill
+**迭代**: RED → GREEN → REFACTOR → 通过则进入 Blind Comparison
 
-**DISCOVERY 对话**：
-```
-用户：创建一个处理 PDF 的 Skill
+### 阶段 4: Blind Comparison
 
-Q: "什么场景下触发？" → "处理这个 PDF"、"分析 PDF 文件"
-Q: "做什么？不做什么？" → 提取/分析/总结，不编辑/转换
-Q: "输入？" → PDF 文件路径或内容
-Q: "输出？" → 结构化内容
-Q: "边界？" → "创建 PDF"（生成）、"打印 PDF"不触发
-```
+**执行**: 内部 — 使用 `agents/comparator.md` 盲比较
 
-**TDD 流程**：
-```
-RED: 无 Skill → 无法识别"处理 PDF"意图
-GREEN: description: "Use when analyzing PDF files"
-REFACTOR: 边界测试"创建 PDF"→ 修改为"analyzing existing PDFs (not creating)"
+**流程**:
+1. 并行运行：With-skill vs 基线（Without/Old）
+2. `agents/grader.md` 评估断言
+3. `python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>`
+4. `agents/analyzer.md` 识别模式
+5. `agents/comparator.md` 盲比较
+6. 判断是否显著优于基线
+
+**通过标准**: 比较器选择 With-skill + 关键断言通过率更高 + 输出质量更优
+
+**失败处理**: 返回 REFACTOR → 重新验证
+
+### 阶段 5: 文档优化
+
+**调度**: `ai-doc-optimizer` — 优化 SKILL.md 供 AI 高效读取
+
+### 阶段 6: 打包部署
+
+```bash
+python -m scripts.package_skill <path/to/skill-folder>
 ```
 
-**输出**：`skills/pdf/SKILL.md`
+**输出**: `.skill` 文件
+
+---
+
+## Dependencies
+
+| 名称 | 用途 | 阶段 |
+|------|------|------|
+| `intent-discovery` | 意图捕捉 | 1 |
+| `test-first` | TDD 方法论 | 3 |
+| `anti-rationalization` | 压力测试 + 规则加固 | 3 |
+| `skill-format` | SKILL.md 格式规范 | 3 |
+| `ai-doc-optimizer` | 文档优化 | 5 |
+| `agents/grader.md` | 评估断言 | 4 |
+| `agents/analyzer.md` | 分析基准模式 | 4 |
+| `agents/comparator.md` | 盲比较 | 4 |
+| `scripts/aggregate_benchmark.py` | 基准聚合 | 4 |
+| `scripts/package_skill.py` | 技能打包 | 6 |
+
+---
+
+## Verification
+
+```bash
+wc -w skills/meta-skill/SKILL.md  # 字数
+ls skills/meta-skill/agents/  # agents
+ls skills/meta-skill/scripts/  # scripts
+```
+
+**部署检查清单**:
+- [ ] 意图已澄清（含语言和输出目录）
+- [ ] 技能类型已判断
+- [ ] TDD 循环通过
+- [ ] Blind Comparison 通过
+- [ ] 文档已优化
+- [ ] 技能已打包

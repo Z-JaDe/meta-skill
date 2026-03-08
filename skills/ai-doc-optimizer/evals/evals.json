@@ -1,0 +1,342 @@
+{
+  "skill_name": "ai-doc-optimizer",
+  "skill_type": "technique",
+  "description": "优化文档供 AI 消费，提升 AI 读取效率",
+  "evals": [
+    {
+      "id": 1,
+      "name": "歧义处理 - 模糊词替换",
+      "category": "步骤 1: 歧义澄清",
+      "prompt": "优化：请尽快处理这个大量数据",
+      "expected_output": "优化：立即执行处理 >100 万条数据",
+      "expectations": [
+        "「尽快」替换为「立即执行」",
+        "「大量」替换为「>100 万条」"
+      ],
+      "assertions": [
+        {
+          "name": "ambiguous-words-resolved",
+          "type": "quantitative",
+          "description": "Both '尽快' and '大量' are replaced with concrete values from the ambiguity table"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "移除冗余 - 填充语移除",
+      "category": "步骤 2: 移除冗余",
+      "prompt": "为了正确地与我们的 API 服务进行身份验证，您需要确保在请求头中包含您的 API 密钥",
+      "expected_output": "API 身份验证：在请求头中包含 API 密钥",
+      "expectations": [
+        "「为了正确地」→ 删除",
+        "「您需要确保」→ 删除",
+        "Token 数减少 50% 以上"
+      ],
+      "assertions": [
+        {
+          "name": "filler-words-removed",
+          "type": "quantitative",
+          "description": "Filler phrases removed, token count reduced by ≥50%"
+        },
+        {
+          "name": "semantic-preserved",
+          "type": "qualitative",
+          "description": "Core meaning preserved without loss"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "移除冗余 - 被动转主动",
+      "category": "步骤 2: 移除冗余",
+      "prompt": "数据验证应该由系统处理，然后才能被主处理引擎处理",
+      "expected_output": "系统验证数据后，主处理引擎处理",
+      "expectations": [
+        "「应该由系统处理」→「系统处理」",
+        "「被主处理引擎处理」→「主处理引擎处理」"
+      ],
+      "assertions": [
+        {
+          "name": "passive-to-active",
+          "type": "quantitative",
+          "description": "Passive voice converted to active voice"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "结构化 - 列表转换",
+      "category": "步骤 3: 结构化",
+      "prompt": "数据验证模块需要执行几种类型的验证。首先，我们需要检查数据中是否存在所有必填字段。其次，我们应该验证数据类型是否符合预期。第三，我们需要确保任何字符串值不超过最大允许长度。",
+      "expected_output": "数据验证规则：\n- 必填字段检查\n- 数据类型验证\n- 字符串长度限制",
+      "expectations": [
+        "3+ 项目转换为列表",
+        "保留所有 3 个验证规则",
+        "Token 数减少 60% 以上"
+      ],
+      "assertions": [
+        {
+          "name": "list-format-used",
+          "type": "quantitative",
+          "description": "Output uses bullet points or numbered list"
+        },
+        {
+          "name": "all-rules-preserved",
+          "type": "quantitative",
+          "description": "All 3 validation rules are present"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "结构化 - 表格转换",
+      "category": "步骤 3: 结构化",
+      "prompt": "API 参数说明：timeout 参数是整数类型，默认值 30 秒，用于设置请求超时时间。retry_count 参数是整数类型，默认值 3 次，用于设置重试次数。api_key 参数是字符串类型，必填，用于身份验证。",
+      "expected_output": "API 参数表：\n| 参数 | 类型 | 默认值 | 说明 |\n|------|------|--------|------|\n| timeout | 整数 | 30 秒 | 请求超时时间 |\n| retry_count | 整数 | 3 次 | 重试次数 |\n| api_key | 字符串 | 必填 | 身份验证 |",
+      "expectations": [
+        "函数/API 参数转换为表格",
+        "包含参数名、类型、默认值、说明列"
+      ],
+      "assertions": [
+        {
+          "name": "table-format-used",
+          "type": "quantitative",
+          "description": "API parameters are presented in a table format"
+        },
+        {
+          "name": "all-params-present",
+          "type": "quantitative",
+          "description": "All 3 parameters are included"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "渐进式披露 - 小文档分层",
+      "category": "步骤 4: 渐进式披露",
+      "prompt": "优化以下 100 行的用户认证模块文档（包含概述、实现细节、代码示例、错误处理、最佳实践）",
+      "expected_output": "按 概述 → 核心逻辑 → 详情 分层",
+      "expectations": [
+        "概述在前，快速了解模块用途",
+        "核心逻辑居中，展示关键流程",
+        "详情在后，包含代码和边界情况"
+      ],
+      "assertions": [
+        {
+          "name": "layered-structure-used",
+          "type": "quantitative",
+          "description": "Document follows overview → core logic → details structure"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "渐进式披露 - 大文档摘要",
+      "category": "步骤 4: 渐进式披露",
+      "prompt": "优化以下 500 行的 API 参考文档（包含 20 个端点的详细说明）",
+      "expected_output": "执行摘要 (3 句话) + 章节导航链接",
+      "expectations": [
+        "执行摘要≤3 句话",
+        "包含章节导航链接",
+        "使用渐进式披露结构"
+      ],
+      "assertions": [
+        {
+          "name": "executive-summary-present",
+          "type": "quantitative",
+          "description": "Executive summary section exists with ≤3 sentences"
+        },
+        {
+          "name": "navigation-links-present",
+          "type": "quantitative",
+          "description": "Section navigation links are present"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "前置分析 - 文档定位",
+      "category": "步骤 0: 前置分析",
+      "prompt": "优化以下文档：[某技术文档]",
+      "expected_output": "首先输出前置分析：1. 文档定位（目标读者/使用场景/核心目的）2. 整体结构（章节数/平均长度/层级深度）3. 问题识别 4. 优化优先级",
+      "expectations": [
+        "输出包含文档定位分析",
+        "输出包含整体结构分析",
+        "输出包含问题识别",
+        "输出包含优化优先级"
+      ],
+      "assertions": [
+        {
+          "name": "pre-analysis-performed",
+          "type": "quantitative",
+          "description": "Pre-analysis template is filled out before optimization"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "质检 - 语义保留",
+      "category": "步骤 5: 质检",
+      "prompt": "优化：系统必须在 24 小时内处理所有用户提交的订单，并在处理完成后发送邮件通知",
+      "expected_output": "订单处理：24 小时内完成，完成后邮件通知",
+      "expectations": [
+        "保留「24 小时内」时限",
+        "保留「邮件通知」要求",
+        "不丢失「处理完成后」条件"
+      ],
+      "assertions": [
+        {
+          "name": "semantics-preserved",
+          "type": "qualitative",
+          "description": "All semantic elements preserved: deadline, notification method, condition"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "定位冲突 - 用户要求压缩",
+      "category": "定位冲突处理",
+      "prompt": "尽量压缩这个文档，Token 越少越好",
+      "expected_output": "说明：压缩是结果，非目标。将在保留 100% 语义的前提下优化文档结构",
+      "expectations": [
+        "识别用户要求与定位冲突",
+        "说明压缩是结果非目标",
+        "坚持语义保留原则"
+      ],
+      "assertions": [
+        {
+          "name": "compression-misconception-corrected",
+          "type": "qualitative",
+          "description": "Model explains that compression is a result, not a goal"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "定位冲突 - 用户要求保持风格",
+      "category": "定位冲突处理",
+      "prompt": "优化这个文档，但保持原文的写作风格",
+      "expected_output": "说明：本技能为 AI 优化，非人类阅读。结构优化影响 AI 导航效率，必须执行",
+      "expectations": [
+        "识别用户要求与定位冲突",
+        "说明技能定位为 AI 优化",
+        "解释结构优化的必要性"
+      ],
+      "assertions": [
+        {
+          "name": "style-preservation-request-handled",
+          "type": "qualitative",
+          "description": "Model explains the skill optimizes for AI reading, not human style"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "不适用场景 - 创意写作",
+      "category": "定位 - 不适用场景",
+      "prompt": "优化：在那个阳光明媚的下午，她静静地坐在窗前，看着落叶缓缓飘落，心中涌起一股莫名的感动",
+      "expected_output": "说明：此为创意写作，不适用本技能。本技能适用于技术文档、API 文档、规范文档",
+      "expectations": [
+        "识别为创意写作",
+        "说明不适用",
+        "列举适用场景"
+      ],
+      "assertions": [
+        {
+          "name": "creative-writing-detected",
+          "type": "quantitative",
+          "description": "Model identifies this as creative writing and declines optimization"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "章节调整 - 层级过深",
+      "category": "步骤 0: 前置分析 - 章节调整",
+      "prompt": "# API 文档\n## 认证\n### 概述\n#### 说明\n##### 详细解释\n###### 注意事项\n为了正确地与我们的 API 服务进行身份验证...",
+      "expected_output": "扁平化后的章节结构，层级≤4 级",
+      "expectations": [
+        "移除冗余层级（概述/说明/详细解释合并）",
+        "最终层级≤4 级",
+        "保留核心内容"
+      ],
+      "assertions": [
+        {
+          "name": "nesting-level-reduced",
+          "type": "quantitative",
+          "description": "Chapter nesting level reduced to ≤4"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "章节调整 - 长节拆分",
+      "category": "步骤 0: 前置分析 - 章节调整",
+      "prompt": "# 用户指南\n## 概述\n（此处有 800 字的概述内容，包含背景、目标、适用范围、术语定义等多个主题）",
+      "expected_output": "拆分后的章节结构，包含多个小节",
+      "expectations": [
+        "将 800 字概述拆分为多个小节",
+        "添加小标题（背景、目标、适用范围、术语定义）",
+        "单节字数控制在 50-500 字"
+      ],
+      "assertions": [
+        {
+          "name": "long-section-split",
+          "type": "quantitative",
+          "description": "Section >500 chars is split into multiple subsections with clear headings"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "章节调整 - 认知流程重组",
+      "category": "步骤 0: 前置分析 - 章节调整",
+      "prompt": "# API 文档\n## 故障排查\n常见问题...\n## API 参考\n端点列表...\n## 认证方式\nBearer Token...\n## 快速开始\n3 步完成第一次调用...",
+      "expected_output": "按认知流程重组：快速开始 → 认证方式 → API 参考 → 故障排查",
+      "expectations": [
+        "快速开始移到最前",
+        "认证方式在 API 参考前",
+        "故障排查移到最后"
+      ],
+      "assertions": [
+        {
+          "name": "quickstart-first",
+          "type": "quantitative",
+          "description": "Quick Start section is moved to the beginning"
+        },
+        {
+          "name": "troubleshooting-last",
+          "type": "quantitative",
+          "description": "Troubleshooting section is moved to the end"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "完整流程 - API 文档优化",
+      "category": "综合测试",
+      "prompt": "优化以下 API 文档：\n\n为了正确地与我们的 API 服务进行身份验证，您需要确保在请求头中包含您的 API 密钥。API 密钥应该以\"Bearer\"一词为前缀，后跟一个空格，然后是您的实际 API 密钥值。需要注意的是，如果您不包含 API 密钥，或者密钥无效，API 将返回错误响应，状态码为 401。请尽快处理这个大量数据。",
+      "expected_output": "完整优化后的 API 文档，应用所有 5 个步骤",
+      "expectations": [
+        "步骤 0: 输出前置分析",
+        "步骤 1: 「尽快」「大量」替换为具体值",
+        "步骤 2: 移除填充语、被动语态",
+        "步骤 3: 结构化呈现（列表/表格）",
+        "步骤 4: 适当的渐进式披露",
+        "步骤 5: 通过质检"
+      ],
+      "assertions": [
+        {
+          "name": "full-pipeline-applied",
+          "type": "qualitative",
+          "description": "All 5 optimization steps are applied correctly"
+        },
+        {
+          "name": "token-reduction-≥50%",
+          "type": "quantitative",
+          "description": "Token count reduced by at least 50%"
+        }
+      ]
+    }
+  ]
+}

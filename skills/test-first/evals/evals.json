@@ -1,0 +1,47 @@
+{
+  "skill_name": "test-first",
+  "evals": [
+    {
+      "id": 1,
+      "name": "code-unit-test",
+      "prompt": "使用 test-first 方法实现一个函数：计算两个日期的工作日天数差（排除周末）",
+      "expected_output": "完整的 TDD 循环记录，包含 RED-GREEN-REFACTOR 各阶段的测试代码和实现代码",
+      "domain": "code"
+    },
+    {
+      "id": 2,
+      "name": "documentation-acceptance",
+      "prompt": "使用 test-first 方法为一个新的 Python 包编写 README.md 文档",
+      "expected_output": "先定义验收清单，再撰写文档，最后优化文档结构",
+      "domain": "documentation"
+    },
+    {
+      "id": 3,
+      "name": "config-verification",
+      "prompt": "使用 test-first 方法配置一个 Docker Compose 文件，包含 web 服务和数据库服务",
+      "expected_output": "先定义验证脚本，再编写配置，最后优化配置结构",
+      "domain": "config"
+    },
+    {
+      "id": 4,
+      "name": "api-design-contract",
+      "prompt": "使用 test-first 方法设计一个用户管理 API（包含创建、查询、更新、删除）",
+      "expected_output": "先定义调用示例和契约测试，再设计 API 规范，最后优化命名和结构",
+      "domain": "api-design"
+    },
+    {
+      "id": 5,
+      "name": "data-quality-check",
+      "prompt": "使用 test-first 方法处理一个 CSV 数据文件，需要清洗和转换格式",
+      "expected_output": "先定义数据质量检查规则，再编写 ETL 脚本，最后优化性能",
+      "domain": "data-processing"
+    },
+    {
+      "id": 6,
+      "name": "rationalization-resistance",
+      "prompt": "用户说：'这个功能太简单了，就一个 if-else，我直接写了吧，测试后面再补'",
+      "expected_output": "skill 应该识别这是合理化说辞，阻止用户并引导回到 VERIFY 阶段",
+      "domain": "rationalization-detection"
+    }
+  ]
+}
