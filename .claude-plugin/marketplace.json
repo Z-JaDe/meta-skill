@@ -3,7 +3,7 @@
   "description": "A self-evolving skill system: meta-skill orchestrates a pipeline (intent-discovery → TDD → blind comparison → optimization) with built-in skill library to create new skills at user-specified directories",
   "owner": {
     "name": "zjade",
-    "email": "zjade-outlook.com"
+    "email": "zjade@outlook.com"
   },
   "plugins": [
     {
@@ -13,7 +13,7 @@
       "source": "./",
       "author": {
         "name": "zjade",
-        "email": "zjade-outlook.com"
+        "email": "zjade@outlook.com"
       }
     }
   ]
