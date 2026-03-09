@@ -1,6 +1,6 @@
 # Meta Skill
 
-A meta-skill system for creating and managing skills.
+A self-evolving skill system: meta-skill orchestrates a pipeline (intent-discovery → TDD → blind comparison → optimization) to iteratively create and evolve skills.
 
 [中文文档](README_CN.md)
 
@@ -8,37 +8,51 @@ A meta-skill system for creating and managing skills.
 
 ## Core Philosophy
 
-**Self-Evolution: Create a messy first version, then iteratively split, refactor, and optimize until convergence.**
+**Self-Evolution: The meta-skill uses its own pipeline to create and continuously improve skills (including itself) until convergence.**
 
-The meta-skill creates an initial version (which may be messy or complex), then continuously evolves through iterative splitting and refinement, updating itself until reaching the final optimized state.
+The `skills/` directory contains the built-in skill library that meta-skill calls during its creation pipeline.
 
 ---
 
 ## Core Flow
 
 ```
-CREATE v0.1 → SPLIT → REFACTOR → CONVERGE
+CREATE v0.1 → TDD (RED-GREEN-REFACTOR) → BLIND COMPARISON → OPTIMIZE → PACKAGE
 ```
 
 | Stage | Description |
 |-------|-------------|
 | **CREATE v0.1** | Create a rough first version quickly (messy is okay) |
-| **SPLIT** | Split complex skills into smaller, focused skills |
-| **REFACTOR** | Refine structure, remove redundancy, clarify ambiguity |
-| **CONVERGE** | Iterate until no meaningful improvements can be made |
+| **TDD** | RED: write failing tests → GREEN: make tests pass → REFACTOR: generalize |
+| **BLIND COMPARISON** | Compare with-skill vs baseline to verify improvement |
+| **OPTIMIZE** | Use ai-doc-optimizer to refine for AI reading efficiency |
+| **PACKAGE** | Generate .skill file for deployment |
 
 ---
 
-## Skills
+## Skill System Architecture
 
-| Skill | Description |
-|-------|-------------|
-| `intent-discovery` | Clarify vague requirements through progressive questioning |
-| `test-first` | TDD methodology: write tests before implementation |
-| `anti-rationalization` | Pressure-test rules and plug rationalization loopholes |
-| `skill-format` | Format and validate SKILL.md files |
-| `ai-doc-optimizer` | Optimize documents for AI reading efficiency through iterative convergence |
-| `meta-skill` | Orchestrate the complete skill creation/update pipeline |
+```
+┌─────────────────────────────────────────────────────────────┐
+│  skills/  (Built-in Skill Library)                          │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  meta-skill/ (Orchestrator)                          │   │
+│  │  - SKILL.md                                          │   │
+│  │  - agents/ (grader, analyzer, comparator)            │   │
+│  │  - scripts/ (package_skill.py, aggregate_benchmark)  │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Sub-skills (Called by meta-skill during pipeline)   │   │
+│  │  - intent-discovery/  - test-first/                  │   │
+│  │  - anti-rationalization/  - skill-format/            │   │
+│  │  - ai-doc-optimizer/                                 │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Note**: When creating a NEW skill, output goes to user-specified directory (`~/.qwen/skills/`, `./`, etc.), NOT in `meta-skill/skills/`.
 
 ---
 
@@ -46,48 +60,65 @@ CREATE v0.1 → SPLIT → REFACTOR → CONVERGE
 
 ```mermaid
 flowchart TB
-    User[User Request] --> Meta[meta-skill<br/>Orchestrator]
-    
-    Meta --> ID[intent-discovery<br/>Requirements Clarification]
+    User[用户请求创建技能] --> Meta[meta-skill<br/>编排器]
+
+    Meta --> ID[intent-discovery<br/>需求澄清]
     ID --> Meta
-    
-    Meta --> TF[test-first<br/>TDD Methodology]
-    TF --> AR[anti-rationalization<br/>Pressure Testing]
+
+    Meta --> TF[test-first<br/>TDD 方法论]
+    TF --> AR[anti-rationalization<br/>压力测试]
     AR --> TF
-    TF --> SF[skill-format<br/>Format Validation]
+    TF --> SF[skill-format<br/>格式验证]
     SF --> TF
-    
-    Meta --> AO[ai-doc-optimizer<br/>Iterative Optimization]
+
+    Meta --> AO[ai-doc-optimizer<br/>迭代优化]
     AO --> AO
-    
-    subgraph Flow[Self-Evolution Flow]
+
+    subgraph Flow[创建流程]
         ID
         TF
         AO
     end
-    
-    subgraph Support[Support Skills]
+
+    subgraph Support[支持技能]
         AR
         SF
     end
-    
+
     Meta --> Flow
     Flow --> Support
 ```
 
 ---
 
-## Self-Evolution Example
+## Skills
+
+| Skill | Description |
+|-------|-------------|
+| `meta-skill` | **Orchestrator** — coordinates the skill creation/evolution pipeline |
+| `intent-discovery` | Clarify vague requirements through progressive questioning |
+| `test-first` | TDD methodology: write tests before implementation |
+| `anti-rationalization` | Pressure-test rules and plug rationalization loopholes |
+| `skill-format` | Format and validate SKILL.md files |
+| `ai-doc-optimizer` | Optimize documents for AI reading efficiency through iterative convergence |
+
+---
+
+## Self-Evolution
+
+All skills in `skills/` are created and maintained by the meta-skill pipeline:
 
 ```
 v0.1: Single monolithic skill (500+ lines, complex)
-    ↓ SPLIT
-v0.2: Split into 3 focused skills
-    ↓ REFACTOR
+    ↓ TDD + Split (via meta-skill)
+v0.2: Split into focused sub-skills
+    ↓ Refactor (via meta-skill)
 v0.3: Remove redundancy, clarify ambiguity
-    ↓ CONVERGE
-v1.0: Final optimized version (converged after 3 iterations)
+    ↓ Converge (via meta-skill)
+v1.0: Final optimized version
 ```
+
+**Key insight**: meta-skill evolves itself and its sub-skills using the same pipeline it orchestrates.
 
 ---
 
@@ -96,26 +127,44 @@ v1.0: Final optimized version (converged after 3 iterations)
 ```
 meta-skill/
 ├── skills/
+│   ├── meta-skill/
+│   │   ├── SKILL.md
+│   │   ├── agents/              # grader.md, analyzer.md, comparator.md
+│   │   └── scripts/             # package_skill.py, aggregate_benchmark.py
 │   ├── intent-discovery/
+│   │   └── SKILL.md
 │   ├── test-first/
+│   │   ├── SKILL.md
+│   │   └── evals/
 │   ├── anti-rationalization/
+│   │   └── SKILL.md
 │   ├── skill-format/
-│   ├── ai-doc-optimizer/
-│   └── meta-skill/              # Meta-skill itself
-├── .qwen/                       # Qwen configuration
+│   │   └── SKILL.md
+│   └── ai-doc-optimizer/
+│       └── SKILL.md
+├── .qwen/
 └── README.md
 ```
+
+**Note**: `skills/` contains meta-skill's built-in skill library. New skills created via meta-skill are placed in user-specified directories (e.g., `~/.qwen/skills/`, `./`), NOT in `meta-skill/skills/`.
 
 ---
 
 ## Usage
 
-When creating or modifying a skill, `meta-skill` automatically:
+**To create a new skill:**
 
-1. **Create v0.1** - Quick rough draft (messy is okay)
-2. **Ask clarifying questions** - Refine requirements
-3. **Split & Refactor** - Iteratively optimize
-4. **Converge** - Stop when no meaningful improvements remain
+```bash
+# Trigger meta-skill in Qwen/Claude
+"Create a skill for [your requirement]"
+```
+
+The meta-skill will:
+1. Clarify requirements via `intent-discovery` (including output_dir)
+2. Create tests first via `test-first`
+3. Pressure-test via `anti-rationalization` (if discipline-enforcing)
+4. Optimize docs via `ai-doc-optimizer`
+5. Package as `.skill` file to user-specified directory
 
 ---
 
