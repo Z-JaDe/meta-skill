@@ -43,7 +43,7 @@ flowchart TD
     S5 -->|收敛 | Output[输出：最终文档]
 ```
 
-**执行模式**: 主 Agent 将每轮迭代（步骤 0-5）委派给子 Agent 执行
+**执行模式**: 主 Agent 将每轮迭代（步骤 0-5）委派给 SubAgent 执行
 
 **迭代状态**:
 - `iteration_count`: 当前迭代次数，初始 0
