@@ -42,15 +42,18 @@ description: Use when creating new skills from scratch or improving existing ski
 
 ```mermaid
 flowchart TD
-    Start[用户请求创建技能] --> P1[调度 intent-discovery]
+    Start[用户请求创建/优化技能] --> P1[调度 intent-discovery]
     P1 --> P2[类型判断]
-    P2 --> P3[调度 test-first]
+    P2 --> P2a{优化旧技能?}
+    P2a -->|是| P2b[调度 ai-doc-optimizer<br/>优化旧文档]
+    P2a -->|否| P3
+    P2b --> P3[调度 test-first]
     P3 --> P4{RED-GREEN-REFACTOR 通过？}
     P4 -->|否 | P3
     P4 -->|是 | P5[Blind Comparison]
     P5 --> P6{显著优于基线？}
     P6 -->|否 | P3
-    P6 -->|是 | P7[调度 ai-doc-optimizer]
+    P6 -->|是 | P7[调度 ai-doc-optimizer<br/>优化最终文档]
     P7 --> P8[package_skill.py]
 ```
 
@@ -101,7 +104,11 @@ flowchart TD
 | 模式型 | 心智模型、决策框架 | 识别场景 + 反例测试 |
 | 参考型 | API/语法/工具文档 | 检索测试 + 应用测试 |
 
-**纪律强制型 [必须]**: 阶段 3 前调度 `anti-rationalization`，将压力场景追加到 `evals.json`（字段 `pressure_scenarios`；路径 `.test/iteration-N/evals.json`）
+**额外操作**:
+| 场景 | 操作 | 原因 |
+|------|------|------|
+| 纪律强制型 [必须] | 阶段 3 前调度 `anti-rationalization`，将压力场景追加到 `evals.json` | 压力测试 |
+| 优化旧技能 [必须] | 阶段 3 前调度 `ai-doc-optimizer`，优化旧技能文档 | 防止 TDD 阶段丢失语义 |
 
 ### 阶段 3: TDD 循环（RED-GREEN-REFACTOR）
 
@@ -197,8 +204,9 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 | 依赖 | 阶段 | 必须/可选 |
 |------|------|----------|
 | intent-discovery | 1 | 必须 |
+| ai-doc-optimizer | 2（优化旧技能） | 优化旧技能必须 |
+| anti-rationalization | 2（纪律强制型） | 纪律强制型必须 |
 | test-first | 3 | 必须 |
-| anti-rationalization | 3 | 纪律强制型必须 |
 | skill-format | 3 | 必须 |
 | agents/grader.md | 4 步骤 2 | 必须 |
 | agents/comparator.md | 4 步骤 4 | 必须 |
