@@ -239,7 +239,7 @@ flowchart TD
 ### 阶段 6: 打包部署
 
 ```bash
-cd <skill-directory>
+cd <meta-skill-directory>
 PYTHONPATH=. python3 scripts/package_skill.py .
 ```
 
