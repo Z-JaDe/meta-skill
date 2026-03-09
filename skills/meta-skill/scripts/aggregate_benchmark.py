@@ -71,15 +71,8 @@ def load_run_results(benchmark_dir: Path) -> dict:
     Returns dict keyed by config name (e.g. "with_skill"/"without_skill",
     or "new_skill"/"old_skill"), each containing a list of run results.
     """
-    # Support both layouts: eval dirs directly under benchmark_dir, or under runs/
-    runs_dir = benchmark_dir / "runs"
-    if runs_dir.exists():
-        search_dir = runs_dir
-    elif list(benchmark_dir.glob("eval-*")):
-        search_dir = benchmark_dir
-    else:
-        print(f"No eval directories found in {benchmark_dir} or {benchmark_dir / 'runs'}")
-        return {}
+    # Standard layout: eval dirs directly under benchmark_dir
+    search_dir = benchmark_dir
 
     results: dict[str, list] = {}
 

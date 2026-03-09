@@ -3,11 +3,12 @@
 Skill Packager - Creates a distributable .skill file of a skill folder
 
 Usage:
-    python utils/package_skill.py <path/to/skill-folder> [output-directory]
+    cd <skill-directory>
+    PYTHONPATH=. python3 scripts/package_skill.py . [output-directory]
 
 Example:
-    python utils/package_skill.py skills/public/my-skill
-    python utils/package_skill.py skills/public/my-skill ./dist
+    cd skills/meta-skill && PYTHONPATH=. python3 scripts/package_skill.py .
+    cd skills/meta-skill && PYTHONPATH=. python3 scripts/package_skill.py . ./dist
 """
 
 import fnmatch

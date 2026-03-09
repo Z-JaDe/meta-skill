@@ -16,6 +16,7 @@ You receive these parameters in your prompt:
 - **loser_skill_path**: Path to the skill that produced the losing output
 - **loser_transcript_path**: Path to the execution transcript for the loser
 - **comparison_result_path**: Path to the blind comparator's output JSON
+- **grading_json_path**: Path to the grader's output (contains eval_feedback)
 - **output_path**: Where to save the analysis results
 
 ## Process
@@ -25,6 +26,13 @@ You receive these parameters in your prompt:
 1. Read the blind comparator's output at comparison_result_path
 2. Note the winning side (A or B), the reasoning, and any scores
 3. Understand what the comparator valued in the winning output
+
+### Step 1.5: Read Grader Feedback (NEW)
+
+1. Read grading.json at grading_json_path
+2. Extract `eval_feedback.suggestions` and `eval_feedback.overall`
+3. Note any assertion weaknesses identified by the grader
+4. Use this feedback to inform your analysis of winner/loser differences
 
 ### Step 2: Read Both Skills
 
@@ -63,6 +71,7 @@ Determine what made the winner better:
 - Better scripts/tools that produced better output?
 - More comprehensive examples that guided edge cases?
 - Better error handling guidance?
+- **Did the winner address grader's eval_feedback concerns while the loser didn't?**
 
 Be specific. Quote from skills/transcripts where relevant.
 

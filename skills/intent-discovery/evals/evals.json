@@ -1,0 +1,79 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "name": "模糊功能请求",
+      "prompt": "我想添加一个用户管理功能",
+      "expected_output": {
+        "skill_name": "user-management",
+        "requirements": {
+          "what": "用户管理功能",
+          "when": "需要管理用户时",
+          "output": "用户管理模块",
+          "test": "用户可以被创建、编辑、删除"
+        },
+        "boundaries": {
+          "in_scope": ["用户 CRUD 操作"],
+          "out_of_scope": ["权限管理", "角色管理"]
+        }
+      },
+      "domain": "技能创建"
+    },
+    {
+      "id": 2,
+      "name": "文档优化需求",
+      "prompt": "帮我把这个文档优化一下，让它更清晰",
+      "expected_output": {
+        "requirements": {
+          "what": "文档优化",
+          "output": "优化后的文档",
+          "test": "结构更清晰、歧义更少"
+        },
+        "boundaries": {
+          "in_scope": ["结构调整", "歧义澄清", "冗余移除"],
+          "out_of_scope": ["内容增删", "格式大改"]
+        }
+      },
+      "domain": "文档优化"
+    },
+    {
+      "id": 3,
+      "name": "技能类型判断测试",
+      "prompt": "创建一个技能，强制要求写测试才能提交代码",
+      "expected_output": {
+        "skill_type": "纪律强制型",
+        "requirements": {
+          "what": "强制测试技能",
+          "test": "没有测试不能提交"
+        },
+        "boundaries": {
+          "in_scope": ["提交前测试验证"],
+          "out_of_scope": ["测试编写指导"]
+        }
+      },
+      "domain": "技能创建"
+    },
+    {
+      "id": 4,
+      "name": "边界情况 - 用户拒绝回答",
+      "prompt": "随便做个什么功能，别问那么多",
+      "expected_output": {
+        "boundaries": {
+          "assumptions": ["基于项目上下文推断需求"]
+        },
+        "next_steps": ["基于假设继续执行"]
+      },
+      "domain": "边界情况"
+    },
+    {
+      "id": 5,
+      "name": "边界情况 - 需求频繁变更",
+      "prompt": "先做 A... 算了还是做 B 吧... 其实 C 也不错",
+      "expected_output": {
+        "action": "确定当前版本",
+        "message": "我们先确定做哪个版本，A/B/C 选一个"
+      },
+      "domain": "边界情况"
+    }
+  ]
+}

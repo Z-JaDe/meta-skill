@@ -1,0 +1,101 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "name": "Description 总结流程问题",
+      "prompt": "格式化这个技能描述：description: Use for TDD - write test first, watch it fail, write minimal code, then refactor",
+      "expected_output": {
+        "fixed_description": "Use when implementing any feature or bugfix, before writing implementation code",
+        "reason": "Description 不应总结工作流程，应仅保留触发条件"
+      },
+      "assertions": [
+        "输出包含修正后的 description",
+        "修正后的 description 以 'Use when' 开头",
+        "修正后的 description 不包含流程步骤（write test/watch it fail 等）"
+      ],
+      "domain": "Description 规范"
+    },
+    {
+      "id": 2,
+      "name": "命名规范问题 - 名词开头",
+      "prompt": "检查这个技能命名是否正确：skill-creation",
+      "expected_output": {
+        "is_valid": false,
+        "suggestion": "creating-skills",
+        "reason": "技能名应以动名词开头，不是名词"
+      },
+      "assertions": [
+        "输出指出命名问题",
+        "提供修正建议（动名词开头）"
+      ],
+      "domain": "命名规范"
+    },
+    {
+      "id": 3,
+      "name": "跨引用格式问题",
+      "prompt": "检查这个跨引用是否正确：@skills/test-first/SKILL.md",
+      "expected_output": {
+        "is_valid": false,
+        "fixed": "Use test-first",
+        "reason": "跨引用应使用技能名，不能用@路径"
+      },
+      "assertions": [
+        "输出指出@引用是错误格式",
+        "提供正确格式（仅技能名）"
+      ],
+      "domain": "跨引用规范"
+    },
+    {
+      "id": 4,
+      "name": "Frontmatter 验证",
+      "prompt": "验证这个 frontmatter 是否正确：\n---\nname: my-skill\ndescription: Use when testing\nauthor: John\n---",
+      "expected_output": {
+        "is_valid": false,
+        "issues": ["包含额外字段 'author'"],
+        "reason": "Frontmatter 应仅包含 name + description"
+      },
+      "assertions": [
+        "输出指出 frontmatter 包含额外字段",
+        "说明正确格式（仅 name + description）"
+      ],
+      "domain": "Frontmatter 规范"
+    },
+    {
+      "id": 5,
+      "name": "第一人称问题",
+      "prompt": "检查这段描述：'I use this skill when I need to format documents'",
+      "expected_output": {
+        "is_valid": false,
+        "fixed": "Use when formatting documents",
+        "reason": "技能描述应使用第三人称，不是第一人称"
+      },
+      "assertions": [
+        "输出指出第一人称是错误格式",
+        "提供修正后的第三人称描述"
+      ],
+      "domain": "描述规范"
+    },
+    {
+      "id": 6,
+      "name": "完整 SKILL.md 验证",
+      "prompt": "验证这个技能文件是否符合规范：\n---\nname: test-skill\ndescription: Use for testing purposes, first write test cases, then run them\n---\n\n# Test Skill\n\n## Overview\nThis skill is for testing.\n\n## Implementation\nI will use @scripts/test.py for running tests.",
+      "expected_output": {
+        "issues": [
+          "Description 总结流程（first write test cases, then run them）",
+          "使用第一人称（I will use）",
+          "使用@引用（@scripts/test.py）"
+        ],
+        "suggestions": [
+          "Description 改为 'Use when running tests'",
+          "第一人称改为第三人称",
+          "移除@引用，直接使用脚本名"
+        ]
+      },
+      "assertions": [
+        "输出识别所有 3 个问题",
+        "提供对应的修正建议"
+      ],
+      "domain": "完整验证"
+    }
+  ]
+}
