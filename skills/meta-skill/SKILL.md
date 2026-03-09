@@ -71,22 +71,39 @@ flowchart TD
 
 **调度**: [必须] 技能 `intent-discovery`，渐进式提问澄清需求
 
-**输出**:
+**meta-skill 调用时传递**:
+- `requirement_type`: "skill-creation"（固定）
+- `context`: `{"language": "zh-CN | en-US", "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"}`
+
+**intent-discovery 输出**:
 ```json
 {
-  "skill_name": "kebab-case-name",
-  "description": "Use when [触发条件]",
-  "language": "zh-CN | en-US",
-  "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx",
+  "requirement_type": "skill-creation",
   "requirements": {"what": "...", "when": "...", "output": "...", "test": "..."},
   "boundaries": {"in_scope": [], "out_of_scope": []},
-  "skill_type": "纪律强制型 | 技术技能型 | 模式型 | 参考型"
+  "dependencies": [],
+  "constraints": [],
+  "context": {
+    "skill_name": "kebab-case-name",
+    "description": "Use when [触发条件]",
+    "language": "zh-CN | en-US",
+    "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"
+  },
+  "next_steps": []
 }
 ```
 
+**meta-skill 提取**:
+- `skill_name`: 从 `context.skill_name`
+- `description`: 从 `context.description`
+- `language`: 从 `context.language`
+- `output_dir`: 从 `context.output_dir`
+- `skill_type`: 在阶段 2 判断
+
 ### 阶段 2: 技能类型判断
 
-**输出**: 判断技能类型，写入 intent-discovery 的 JSON
+**输入**: 阶段 1 的 intent-discovery 输出  
+**输出**: 判断 `skill_type`，添加到 context 中
 
 ```mermaid
 flowchart TD
@@ -111,9 +128,10 @@ flowchart TD
 | 参考型 | API/语法/工具文档 | 标准 TDD |
 
 **额外操作**:
-| 场景 | 操作 | 原因 |
-|------|------|------|
-| 优化旧技能 [必须] | 阶段 3 前调度 `ai-doc-optimizer`，优化旧技能文档 | 防止 TDD 阶段丢失语义 |
+| 场景 | 条件 | 操作 | 原因 |
+|------|------|------|------|
+| 优化旧技能 | 旧文档行数 >250 OR 存在明显问题（歧义、冗余、结构混乱） | 阶段 3 前调度 `ai-doc-optimizer`，优化旧技能文档 | 防止 TDD 阶段丢失语义 |
+| 优化旧技能 | 旧文档行数 ≤250 AND 整体无明显问题 | 跳过提前优化，直接进入阶段 3 | 避免不必要的优化开销 |
 
 ### 阶段 3: TDD 循环（RED-GREEN-REFACTOR）
 

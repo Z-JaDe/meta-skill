@@ -7,13 +7,13 @@ description: Use when user request is vague, requirements are unclear, boundarie
 
 ## Overview
 
-从模糊想法 → 清晰可执行的需求定义。**先澄清再执行**。
-
 **铁律**: `NO EXECUTION WITHOUT CLARIFICATION`
 
-**适用**: 用户提出模糊想法/功能请求
+从模糊想法 → 清晰可执行需求。先澄清再执行。
 
-**不适用**: 需求已清晰明确的任务
+| 适用 | 不适用 |
+|------|--------|
+| 技能创建、功能开发、Bug 修复、代码重构、文档编写 | 需求已清晰明确的任务 |
 
 ---
 
@@ -26,19 +26,22 @@ flowchart TD
     C --> D[4. 输出需求定义]
 ```
 
+**渐进式提问**：一次一问、由粗到细、逐步缩小范围。
+
 ---
 
 ## Implementation
 
 ### 阶段 1: 理解上下文
 
-**动态检索上下文**:
-| 用户请求类型 | 检索内容 |
-|--------------|----------|
-| 功能/组件 | 项目结构、技术栈、现有类似模块 |
-| 技能创建 | 现有技能目录、模板、命名规范 |
-| 文档编写 | 设计稿、API 文档、参考材料 |
-| 问题修复 | 错误日志、相关文件、修改历史 |
+**动态检索**（按 `requirement_type`）:
+| 类型 | 检索内容 |
+|------|----------|
+| skill-creation | 现有技能目录、模板、命名规范 |
+| feature-development | 项目结构、技术栈、现有类似模块 |
+| bug-fix | 错误日志、相关文件、修改历史 |
+| refactoring | 目标模块、依赖图、测试覆盖 |
+| documentation | 设计稿、API 文档、参考材料 |
 
 **识别关键词**:
 | 类型 | 示例 |
@@ -52,36 +55,35 @@ flowchart TD
 **核心四问**:
 | 维度 | 示例问法 |
 |------|----------|
-| What | "具体来说，这个功能让谁能够做什么？" |
-| When | "什么情况下应该使用这个功能？" |
+| What | "具体来说，让谁能够做什么？" |
+| When | "什么情况下应该使用？" |
 | Output | "完成后应该看到什么结果？" |
 | Test | "如何判断它工作正常？" |
 
 **提问原则**:
-| 原则 | 正确示例 | 错误示例 |
-|------|----------|----------|
-| 一次一问 | "这个功能主要给谁使用？" | "这个功能给谁用，在什么场景下用？" |
+| 原则 | 正确 | 错误 |
+|------|------|------|
+| 一次一问 | "主要给谁使用？" | "给谁用，在什么场景下用？" |
 | 选择题优先 | "输出格式：A) 代码 B) 文档 C) 配置？" | "你想要什么类型的输出？" |
-| 追问细节 | 用户："要用户管理"→追问："A) 增删改查 B) 权限管理 C) 两者？" | 直接假设功能范围 |
+| 追问细节 | "A) 增删改查 B) 权限管理 C) 两者？" | 直接假设范围 |
 
 ### 阶段 3: 边界确认
 
 | 确认项 | 示例问法 |
 |--------|----------|
-| 不做的事情 | "有哪些事情是这个功能明确不处理的？" |
-| 依赖关系 | "这个功能依赖其他系统/模块吗？" |
-| 约束条件 | "有什么技术约束吗（语言/框架/版本）？" |
-| 技能语言 | "技能文档用中文还是英文？" |
-| 输出目录 | "技能放在哪里？A) 个人目录 (~/.qwen/) B) 项目目录 (./) C) 其他" |
+| 不做的事情 | "有哪些事情明确不处理？" |
+| 依赖关系 | "依赖其他系统/模块吗？" |
+| 约束条件 | "技术约束？（语言/框架/版本）" |
+
+按 `requirement_type` 与 `context` 示例字段，追加类型特定追问。
 
 ### 阶段 4: 输出需求定义
 
+**统一输出格式**:
+
 ```json
 {
-  "skill_name": "kebab-case-name",
-  "description": "Use when [触发条件]",
-  "language": "zh-CN | en-US",
-  "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx",
+  "requirement_type": "skill-creation | feature-development | bug-fix | refactoring | documentation",
   "requirements": {
     "what": "要做什么",
     "when": "触发场景",
@@ -89,14 +91,24 @@ flowchart TD
     "test": "验证标准"
   },
   "boundaries": {
-    "in_scope": ["包含的功能"],
-    "out_of_scope": ["不包含的功能"]
+    "in_scope": [],
+    "out_of_scope": []
   },
-  "dependencies": ["依赖的模块/技能"],
-  "constraints": ["技术/资源约束"],
-  "next_steps": ["建议的后续行动"]
+  "dependencies": [],
+  "constraints": [],
+  "context": {},
+  "next_steps": []
 }
 ```
+
+**`context` 字段**（按 `requirement_type` 从下表选择填充）:
+| 类型 | 示例字段 |
+|------|----------|
+| skill-creation | `skill_name`, `language`, `output_dir` |
+| feature-development | `tech_stack`, `target_module` |
+| bug-fix | `affected_files`, `repro_steps` |
+| refactoring | `scope`, `preserve_behavior` |
+| documentation | `audience`, `format` |
 
 ---
 
@@ -114,21 +126,20 @@ flowchart TD
 |------|------|
 | 用户回答了但不理解 | "能再具体说明一下吗？" |
 | 需求频繁变化 | 先确定当前版本 |
-| 范围不断扩大 | "这些功能是否都属于当前范围？" |
+| 范围不断扩大 | "这些是否都属于当前范围？" |
 
 ---
 
 ## Verification
 
 ```bash
-wc -w skills/intent-discovery/SKILL.md  # 检查字数
-cat requirements.json | jq .  # 验证输出
+wc -w skills/intent-discovery/SKILL.md
+cat requirements.json | jq .
 ```
 
 **部署检查清单**:
 - [ ] 需求定义包含 What/When/Output/Test
+- [ ] `requirement_type` 已判断
 - [ ] 边界清晰（in_scope + out_of_scope）
-- [ ] 技能类型已判断
 - [ ] 依赖和约束已识别
-- [ ] 技能语言已确认
-- [ ] 输出目录已确认（个人/项目 + 配置类型）
+- [ ] `context` 已按类型填充
