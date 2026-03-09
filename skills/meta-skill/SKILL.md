@@ -30,8 +30,10 @@ description: Use when creating new skills from scratch or improving existing ski
 | RED | 编写测试→SubAgent 执行失败 |
 | GREEN | 编写实现→SubAgent 执行通过 |
 | REFACTOR | 修订技能→泛化+精简→保持通过 |
-| Blind Comparison | 盲比较：评估者不知哪个是带技能输出 |
-| 显著优于基线 | 比较器选择率>70% AND 断言通过率提升>20%（基线=无技能运行） |
+| Blind Comparison | 盲比较：评估者不知 candidate/baseline 身份 |
+| candidate | 待验证的技能版本（新技能或优化后版本） |
+| baseline | 对比基准（新技能=无技能；优化=旧版本） |
+| 显著优于基线 | 新技能：选择率>70% AND 通过率提升>20%；优化：选择率>60% AND 通过率不降低 |
 | SubAgent | 通过 Cursor Task 或 subprocess 启动的独立 Agent |
 
 ---
@@ -129,30 +131,36 @@ flowchart LR
 
 ### 阶段 4: Blind Comparison
 
-**最大迭代**: 3 轮（每轮：每 eval 用例跑 3 次 with-skill + 3 次 without-skill）
+**对比策略**:
+| 场景 | 对比方式 | 基线 |
+|------|----------|------|
+| 创建新技能 | new-skill vs baseline | baseline=无技能运行 |
+| 优化旧技能 | new-skill vs old-skill | old-skill=优化前版本 |
+
+**最大迭代**: 3 轮（每轮：每 eval 用例跑 3 次 candidate + 3 次 baseline）
 
 ```mermaid
 flowchart TD
-    S1[并行运行 with/without-skill<br/>每 eval 3 次] --> S2[grader.md 评估 expectations<br/>→ grading.json]
+    S1[并行运行 candidate/baseline<br/>每 eval 3 次] --> S2[grader.md 评估 expectations<br/>→ grading.json]
     S2 --> S3[aggregate_benchmark.py<br/>→ benchmark.json]
     S3 --> S4[comparator.md 盲评<br/>→ comparison_result.json]
     S4 --> S5[analyzer.md 分析<br/>→ improvement_suggestions]
-    S5 --> S6{选择率>70%<br/>AND 通过率提升>20%?}
+    S5 --> S6{新技能: 选择率>70% AND 通过率提升>20%<br/>优化: 选择率>60% AND 通过率不降低?}
     S6 -->|是| Pass[通过]
     S6 -->|否| Refactor[返回 REFACTOR]
 ```
 
 | 步骤 | 操作 | 调度 |
 |------|------|------|
-| 1 | SubAgent 并行运行 with-skill 和 without-skill（每 eval 3 次）| SubAgent |
+| 1 | SubAgent 并行运行 candidate 和 baseline（每 eval 3 次）| SubAgent |
 | 2 | SubAgent 加载 `agents/grader.md`，评估 expectations→grading.json | SubAgent |
 | 3 | 执行 `python -m scripts.aggregate_benchmark .test/iteration-N --skill-name <name>` | 脚本 |
 | 4 | SubAgent 加载 `agents/comparator.md`，盲评→comparison_result.json | SubAgent |
 | 5 | SubAgent 加载 `agents/analyzer.md`，分析→improvement_suggestions | SubAgent |
-| 6 | 判断：选择率>70% AND 通过率提升>20% | 无 |
+| 6 | 判断：新技能（选择率>70% AND 通过率提升>20%）/ 优化（选择率>60% AND 通过率不降低）| 无 |
 
-**路径**: `.test/iteration-N/eval-M/{with_skill,without_skill}/run-K/`  
-**指标**: 选择率=comparator 选 with-skill 的比例；通过率=grader 断言通过比例  
+**路径**: `.test/iteration-N/eval-M/{candidate,baseline}/run-K/`  
+**指标**: 选择率=comparator 选 candidate 的比例；通过率=grader 断言通过比例  
 **失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）→ 只重跑 improvement_suggestions 指定的 eval，未指定则全重跑
 
 ### 阶段 5: 文档优化
