@@ -1,6 +1,6 @@
 ---
 name: anti-rationalization
-description: Use when designing discipline-enforcing rules, pressure testing rule robustness, or plugging rationalization loopholes. ALWAYS: design pressure scenarios → capture rationalizations → reinforce → plug → re-test until bulletproof.
+description: Use when designing discipline-enforcing rules, pressure testing rule robustness, or plugging rationalization loopholes. ALWAYS design pressure scenarios, capture rationalizations, reinforce, plug, and re-test until bulletproof
 ---
 
 # Anti-Rationalization

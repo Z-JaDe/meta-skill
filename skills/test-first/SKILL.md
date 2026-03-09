@@ -1,6 +1,6 @@
 ---
 name: test-first
-description: Use when implementing any feature or bugfix, before writing implementation code. Triggered by: skipping verification, "too simple to test", "test later", manual checks.
+description: Use when implementing any feature or bugfix before writing implementation code. Triggered when skipping verification, 'too simple to test', 'test later', or manual checks
 ---
 
 # Test-First (TDD)

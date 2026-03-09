@@ -1,6 +1,6 @@
 ---
 name: intent-discovery
-description: Use when user request is vague, requirements are unclear, boundaries undefined, or success criteria missing. ALWAYS: clarify before execution.
+description: Use when user request is vague, requirements are unclear, boundaries undefined, or success criteria missing. ALWAYS clarify before execution
 ---
 
 # Intent Discovery

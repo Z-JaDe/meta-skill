@@ -1,6 +1,6 @@
 ---
 name: skill-format
-description: Use when formatting or validating SKILL.md files. Triggered by: skill not loading, wrong triggers, description summarizing workflow, abstract naming, excessive word count.
+description: Use when formatting or validating SKILL.md files when skill not loading, wrong triggers, description summarizing workflow, abstract naming, or excessive word count
 ---
 
 # SKILL Format
@@ -59,6 +59,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 | 错误 | 修复 |
 |------|------|
 | Description 总结流程 | 仅保留触发条件 |
+| Description 使用冒号分隔 trigger keywords | 用 when/due to/with 自然融入 |
 | 第一人称 | 改用第三人称 |
 | 抽象命名 | 使用具体动词/症状 |
 | 过度详细 | 移至 --help 或跨引用 |
