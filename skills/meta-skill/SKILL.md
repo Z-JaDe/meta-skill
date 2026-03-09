@@ -35,6 +35,10 @@ description: Use when creating new skills from scratch or improving existing ski
 | baseline | 对比基准（新技能=无技能；优化=旧版本） |
 | 显著优于基线 | 新技能：选择率>70% AND 通过率提升>20%；优化：选择率>60% AND 通过率不降低 |
 | SubAgent | 通过 Cursor Task 或 subprocess 启动的独立 Agent |
+| evals.json | 评估用例配置，含 eval 用例列表；纪律强制型另含 pressure_scenarios |
+| pressure_scenarios | 用户可合理化跳过的场景集合，用于压力测试 |
+| 返回 REFACTOR | 返回阶段 3 继续 TDD 循环 |
+| improvement_suggestions | analyzer.md 输出，可指定需重跑的 eval |
 
 ---
 
@@ -166,7 +170,7 @@ flowchart TD
 | 5 | SubAgent 加载 `agents/analyzer.md`，分析→improvement_suggestions | SubAgent |
 | 6 | 判断：新技能（选择率>70% AND 通过率提升>20%）/ 优化（选择率>60% AND 通过率不降低）| 无 |
 
-**路径**: `.test/iteration-N/eval-M/{candidate,baseline}/run-K/`  
+**路径**: `.test/iteration-N/eval-M/{candidate,baseline}/run-K/`（N=迭代编号，M=eval 编号，K=run 编号）  
 **指标**: 选择率=comparator 选 candidate 的比例；通过率=grader 断言通过比例  
 **失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）→ 只重跑 improvement_suggestions 指定的 eval，未指定则全重跑
 
@@ -231,11 +235,7 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 | 自己执行任务 | "这个很快，我直接做" | meta-skill 不执行，只调度 |
 | 纪律强制型跳过 anti-rationalization | "压力场景不重要" | 压力下最容易被跳过 |
 
-**核心原则**:
-- **纯调度，不执行**: 仅编排流程，不直接执行任务
-- **铁律不可破**: NO SKILL WITHOUT A FAILING TEST FIRST（没有例外）
-- **必须调度**: 各阶段技能/SubAgent/脚本均须调度，不可跳过
-- **迭代上限**: TDD 5 次、Blind Comparison 3 轮，超过→人工审查
+**核心原则**: 见 Overview + 硬性限制；各阶段技能/SubAgent/脚本均须调度，不可跳过。
 
 ---
 
@@ -245,9 +245,7 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 |------|------|
 | 可修复 | 按错误信息修复后重试 |
 | 需重构 | 返回 REFACTOR |
-| 超过迭代上限 | 记录到 `.test/iteration-N/failure.md` → 人工审查 |
-
-**记录内容**: 失败阶段、错误信息、已尝试修复、建议下一步
+| 超过迭代上限 | 记录到 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议下一步）→ 人工审查 |
 
 | 情况 | 处理 |
 |------|------|
