@@ -1,0 +1,13 @@
+{
+  "name": "meta-skill",
+  "description": "Create custom AI skills with guaranteed completeness and optimized retrieval. Uses TDD + Anti-Rationalization Pressure Testing + Blind Comparison for completeness, and redundancy removal + ambiguity clarification + progressive disclosure for AI retrieval efficiency.",
+  "version": "1.0.0",
+  "author": {
+    "name": "zjade",
+    "email": "zjade@outlook.com"
+  },
+  "homepage": "https://github.com/Z-JaDe/meta-skill",
+  "repository": "https://github.com/Z-JaDe/meta-skill",
+  "license": "MIT",
+  "keywords": ["skill-creator", "meta-skill", "self-evolving", "tdd", "intent-discovery", "anti-rationalization", "skill-format", "ai-doc-optimizer"]
+}

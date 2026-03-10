@@ -210,7 +210,7 @@ meta-skill/
 
 ## Extensions
 
-This project works as both a **Claude Code Plugin** and a **Qwen Code Extension**.
+This project works as a **Claude Code Plugin**, **Qwen Code Extension**, and **Cursor Plugin**.
 
 ### Installation
 
@@ -229,12 +229,19 @@ qwen extensions install https://github.com/Z-JaDe/meta-skill
 qwen extensions link /path/to/meta-skill
 ```
 
+**Cursor:**
+```bash
+# Open Cursor → Settings → AI → Plugins → Add Plugin
+# Select the .cursor-plugin folder from this repository
+```
+
 ### Configuration
 
 | Platform | Configuration File |
 |----------|-------------------|
 | Claude Code | `.claude-plugin/marketplace.json` |
 | Qwen Code | `qwen-extension.json` |
+| Cursor | `.cursor-plugin/plugin.json` |
 
 ---
 
