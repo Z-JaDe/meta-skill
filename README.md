@@ -1,6 +1,6 @@
 # Meta Skill
 
-A self-evolving skill system: meta-skill orchestrates a pipeline (intent-discovery → TDD → blind comparison → optimization) to iteratively create and evolve skills.
+A self-evolving skill system: meta-skill orchestrates a **TDD-driven → Blind Comparison → AI Retrieval Optimization** pipeline to iteratively create and evolve skills.
 
 [中文文档](README_CN.md)
 
@@ -17,16 +17,23 @@ The `skills/` directory contains the built-in skill library that meta-skill call
 ## Core Flow
 
 ```
-CREATE v0.1 → TDD (RED-GREEN-REFACTOR) → BLIND COMPARISON → OPTIMIZE → PACKAGE
+Intent Discovery → TDD-Driven (RED-GREEN-REFACTOR + Anti-Rationalization) → Blind Comparison → AI Retrieval Optimization → Package & Deploy
 ```
 
-| Stage | Description |
-|-------|-------------|
-| **CREATE v0.1** | Create a rough first version quickly (messy is okay) |
-| **TDD** | RED: write failing tests → GREEN: make tests pass → REFACTOR: generalize |
-| **BLIND COMPARISON** | Compare with-skill vs baseline to verify improvement |
-| **OPTIMIZE** | Use ai-doc-optimizer to refine for AI reading efficiency |
-| **PACKAGE** | Generate .skill file for deployment |
+| Stage | Skill | Description |
+|-------|-------|-------------|
+| **Intent Discovery** | `intent-discovery` | Progressive questioning to clarify vague requirements, output `output_dir` and skill type |
+| **TDD-Driven** | `test-first` + `anti-rationalization` | **RED**: Design pressure scenarios + capture rationalizations → **GREEN**: Reinforce with persuasion principles + plug loopholes → **REFACTOR**: Re-test until no new rationalizations |
+| **Blind Comparison** | `agents/{grader,comparator,analyzer}` | Blind evaluation: candidate vs baseline, verify significantly better than baseline (selection rate>70% AND pass rate improvement>20%) |
+| **AI Retrieval Optimization** | `ai-doc-optimizer` | Iterative optimization until convergence (2 consecutive rounds of semantic equivalence or max_iterations=5) |
+| **Package & Deploy** | `scripts/package_skill.py` | Generate `.skill` file, validate: <500 lines, Mermaid diagrams, kebab-case naming |
+
+**Anti-Rationalization Integrated into TDD**:
+| TDD Stage | Anti-Rationalization Strategy |
+|-----------|-------------------------------|
+| **RED** | Design ≥3 overlapping pressure scenarios, adversarial testing to capture rationalizations (verbatim recording) |
+| **GREEN** | Reinforce with persuasion principles (authority + commitment + social proof), plug loopholes (No exceptions + prohibit each workaround) |
+| **REFACTOR** | Re-test validation, discover new rationalizations → continue reinforcing until none remain |
 
 ---
 
@@ -60,27 +67,27 @@ CREATE v0.1 → TDD (RED-GREEN-REFACTOR) → BLIND COMPARISON → OPTIMIZE → P
 
 ```mermaid
 flowchart TB
-    User[用户请求创建技能] --> Meta[meta-skill<br/>编排器]
+    User[User Request] --> Meta[meta-skill<br/>Orchestrator]
 
-    Meta --> ID[intent-discovery<br/>需求澄清]
+    Meta --> ID[intent-discovery<br/>Requirement Clarification]
     ID --> Meta
 
-    Meta --> TF[test-first<br/>TDD 方法论]
-    TF --> AR[anti-rationalization<br/>压力测试]
+    Meta --> TF[test-first<br/>TDD Methodology]
+    TF --> AR[anti-rationalization<br/>Pressure Testing]
     AR --> TF
-    TF --> SF[skill-format<br/>格式验证]
+    TF --> SF[skill-format<br/>Format Validation]
     SF --> TF
 
-    Meta --> AO[ai-doc-optimizer<br/>迭代优化]
+    Meta --> AO[ai-doc-optimizer<br/>Iterative Optimization]
     AO --> AO
 
-    subgraph Flow[创建流程]
+    subgraph Flow[Creation Flow]
         ID
         TF
         AO
     end
 
-    subgraph Support[支持技能]
+    subgraph Support[Support Skills]
         AR
         SF
     end

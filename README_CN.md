@@ -1,6 +1,6 @@
 # Meta Skill
 
-一个自演进的技能系统：meta-skill 编排流程（intent-discovery → TDD → 盲比较 → 优化）来迭代创建和演进技能。
+一个自进化的技能系统：meta-skill 编排 **TDD 驱动 → 双盲检测 → AI 检索优化** 流水线，迭代创建和进化技能。
 
 ---
 
@@ -15,16 +15,23 @@
 ## 核心流程
 
 ```
-创建 v0.1 → TDD (RED-GREEN-REFACTOR) → 盲比较 → 优化 → 打包
+意图发现 → TDD 驱动 (RED-GREEN-REFACTOR + Anti-Rationalization) → 双盲检测 → AI 检索优化 → 打包部署
 ```
 
-| 阶段 | 说明 |
-|------|------|
-| **创建 v0.1** | 快速创建粗糙的初版（乱没关系） |
-| **TDD** | RED: 写失败测试 → GREEN: 让测试通过 → REFACTOR: 泛化 |
-| **盲比较** | 比较有技能 vs 基线以验证改进 |
-| **优化** | 使用 ai-doc-optimizer 优化供 AI 高效读取 |
-| **打包** | 生成 .skill 文件用于部署 |
+| 阶段 | 技能 | 说明 |
+|------|------|------|
+| **意图发现** | `intent-discovery` | 渐进式提问澄清模糊需求，输出 `output_dir` 和技能类型 |
+| **TDD 驱动** | `test-first` + `anti-rationalization` | **RED**: 设计压力场景 + 捕获说辞 → **GREEN**: 说服原则加固 + 漏洞封堵 → **REFACTOR**: 重测验证直到无新说辞 |
+| **双盲检测** | `agents/{grader,comparator,analyzer}` | 盲评 candidate vs baseline，验证显著优于基线（选择率>70% AND 通过率提升>20%） |
+| **AI 检索优化** | `ai-doc-optimizer` | 迭代优化直到收敛（连续 2 轮语义等价或 max_iterations=5） |
+| **打包部署** | `scripts/package_skill.py` | 生成 `.skill` 文件，验证：行数<500、Mermaid 流程图、kebab-case 命名 |
+
+**Anti-Rationalization 融入 TDD**:
+| TDD 阶段 | Anti-Rationalization 策略 |
+|---------|--------------------------|
+| **RED** | 设计≥3 种压力叠加场景，对抗测试捕获说辞（逐字记录） |
+| **GREEN** | 用说服原则加固（权威 + 承诺 + 社会证明），封堵漏洞（No exceptions + 逐一禁止） |
+| **REFACTOR** | 重测验证，发现新说辞→继续加固，直到无新说辞 |
 
 ---
 
