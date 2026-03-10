@@ -155,21 +155,52 @@ meta-skill/
 
 ---
 
-## 使用方式
+## 扩展支持
 
-**创建新技能：**
+### Claude Code Plugin
 
+本项目是一个 **Claude Code Plugin**，提供自进化的技能系统用于创建新技能。
+
+**安装方式：**
 ```bash
-# 在 Qwen/Claude 中触发 meta-skill
-"创建一个用于 [你的需求] 的技能"
+/plugin marketplace add https://github.com/Z-JaDe/meta-skill
+/plugin install meta-skill
 ```
 
-meta-skill 将：
-1. 通过 `intent-discovery` 澄清需求（包括 output_dir）
-2. 通过 `test-first` 先写测试
-3. 通过 `anti-rationalization` 压力测试（如果是纪律强制型）
-4. 通过 `ai-doc-optimizer` 优化文档
-5. 打包为 .skill 文件到用户指定的目录
+### Qwen Code Extension
+
+本项目是一个 **Qwen Code Extension**，提供自进化的技能系统用于创建新技能。
+
+**安装方式：**
+```bash
+# 从远程 URL 安装
+qwen extensions install https://github.com/Z-JaDe/meta-skill
+
+# 或链接本地扩展（开发模式）
+qwen extensions link /path/to/meta-skill
+```
+
+**使用方法：**
+
+安装后，通过以下提问创建新技能：
+
+```
+Create a skill for [你的需求]
+```
+
+meta-skill 将自动编排：
+1. **意图发现** - 渐进式提问澄清需求
+2. **TDD 驱动** - 先写测试，再实现并压力测试
+3. **双盲检测** - 对比候选与基线
+4. **AI 优化** - 迭代优化直到收敛
+5. **打包部署** - 生成验证后的 `.skill` 文件
+
+### 配置文件
+
+| 平台 | 配置文件 |
+|------|---------|
+| Claude Code | `.claude-plugin/marketplace.json` |
+| Qwen Code | `qwen-extension.json` |
 
 ---
 

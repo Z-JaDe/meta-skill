@@ -1,0 +1,11 @@
+{
+  "name": "meta-skill",
+  "version": "1.0.0",
+  "description": "A self-evolving skill system: meta-skill orchestrates a pipeline (intent-discovery → TDD → blind comparison → optimization) with built-in skill library to create new skills",
+  "author": {
+    "name": "zjade",
+    "email": "zjade@outlook.com"
+  },
+  "contextFileName": "MetaSkillContext.md",
+  "keywords": ["skill-creator", "meta-skill", "self-evolving", "tdd", "intent-discovery", "anti-rationalization", "skill-format", "ai-doc-optimizer"]
+}

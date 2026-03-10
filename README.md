@@ -157,6 +157,55 @@ meta-skill/
 
 ---
 
+## Extensions
+
+### Claude Code Plugin
+
+This project is a **Claude Code Plugin** that provides a self-evolving skill system for creating new skills.
+
+**Installation:**
+```bash
+/plugin marketplace add https://github.com/Z-JaDe/meta-skill
+/plugin install meta-skill
+```
+
+### Qwen Code Extension
+
+This project is a **Qwen Code Extension** that provides a self-evolving skill system for creating new skills.
+
+**Installation:**
+```bash
+# From remote URL
+qwen extensions install https://github.com/Z-JaDe/meta-skill
+
+# Or link local extension (for development)
+qwen extensions link /path/to/meta-skill
+```
+
+**Usage:**
+
+Once installed, create a new skill by asking:
+
+```
+Create a skill for [your requirement]
+```
+
+The meta-skill will automatically orchestrate:
+1. **Intent Discovery** - Clarify requirements through progressive questioning
+2. **TDD-Driven** - Write tests first, then implement with pressure-testing
+3. **Blind Comparison** - Evaluate candidates against baseline
+4. **AI Optimization** - Iteratively optimize until convergence
+5. **Package & Deploy** - Generate validated `.skill` file
+
+### Configuration Files
+
+| Platform | Configuration File |
+|----------|-------------------|
+| Claude Code | `.claude-plugin/marketplace.json` |
+| Qwen Code | `qwen-extension.json` |
+
+---
+
 ## Usage
 
 **To create a new skill:**
