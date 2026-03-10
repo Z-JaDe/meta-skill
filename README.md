@@ -1,8 +1,38 @@
 # Meta Skill
 
-A self-evolving skill system: meta-skill orchestrates a **TDD-driven → Blind Comparison → AI Retrieval Optimization** pipeline to iteratively create and evolve skills.
+**Create custom AI skills with guaranteed completeness and optimized retrieval.** Meta-skill uses **TDD + Anti-Rationalization Pressure Testing + Blind Comparison** to ensure skill completeness, and **redundancy removal + ambiguity clarification + progressive disclosure** to maximize AI retrieval efficiency.
 
 [中文文档](README_CN.md)
+
+---
+
+## Quick Start: Create Your First Skill
+
+```bash
+# In Qwen Code or Claude Code, simply ask:
+"Create a skill for [your requirement]"
+```
+
+**Example:**
+```
+"Create a skill for automatic code review"
+"Create a skill for writing unit tests"
+"Create a skill for optimizing prompts"
+```
+
+Meta-skill will automatically:
+
+**Ensure Completeness:**
+1. **TDD** - Write tests first to define expected behavior
+2. **Anti-Rationalization Pressure Testing** - Capture and plug loopholes under pressure scenarios
+3. **Blind Comparison** - Verify candidate significantly outperforms baseline
+
+**Optimize AI Retrieval:**
+4. **Ambiguity Clarification** - Resolve unclear semantics
+5. **Redundancy Removal** - Eliminate duplicate content
+6. **Progressive Disclosure** - Structure information from simple to complex
+
+7. **Package** as `.skill` file ready to use
 
 ---
 
@@ -100,14 +130,35 @@ flowchart TB
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| `meta-skill` | **Orchestrator** — coordinates the skill creation/evolution pipeline |
-| `intent-discovery` | Clarify vague requirements through progressive questioning |
-| `test-first` | TDD methodology: write tests before implementation |
-| `anti-rationalization` | Pressure-test rules and plug rationalization loopholes |
-| `skill-format` | Format and validate SKILL.md files |
-| `ai-doc-optimizer` | Optimize documents for AI reading efficiency through iterative convergence |
+### Built-in Skill Library
+
+These skills work together to create new skills:
+
+| Skill | Role in Skill Creation |
+|-------|------------------------|
+| `meta-skill` | **Orchestrator** — coordinates the entire skill creation pipeline |
+| `intent-discovery` | **Requirement Analyst** — clarifies vague requirements through progressive questioning |
+| `test-first` | **TDD Engine** — writes tests before implementation to ensure correctness |
+| `anti-rationalization` | **Quality Assurance** — pressure-tests rules to prevent loopholes |
+| `skill-format` | **Validator** — ensures SKILL.md follows proper format |
+| `ai-doc-optimizer` | **Optimizer** — iteratively refines documentation for AI reading efficiency |
+
+### How Skills Work Together
+
+When you ask meta-skill to create a new skill:
+
+```
+User Request → intent-discovery (clarify) → test-first (write tests) 
+           → anti-rationalization (pressure-test) → ai-doc-optimizer (refine)
+           → skill-format (validate) → .skill file
+```
+
+Each sub-skill handles a specific aspect of the creation process, ensuring the final skill is:
+- **Well-defined** (clear requirements)
+- **Test-covered** (TDD-driven)
+- **Robust** (pressure-tested against rationalization)
+- **Well-documented** (optimized for AI reading)
+- **Properly formatted** (validated format)
 
 ---
 
@@ -159,68 +210,31 @@ meta-skill/
 
 ## Extensions
 
-### Claude Code Plugin
+This project works as both a **Claude Code Plugin** and a **Qwen Code Extension**.
 
-This project is a **Claude Code Plugin** that provides a self-evolving skill system for creating new skills.
+### Installation
 
-**Installation:**
+**Claude Code:**
 ```bash
 /plugin marketplace add https://github.com/Z-JaDe/meta-skill
 /plugin install meta-skill
 ```
 
-### Qwen Code Extension
-
-This project is a **Qwen Code Extension** that provides a self-evolving skill system for creating new skills.
-
-**Installation:**
+**Qwen Code:**
 ```bash
 # From remote URL
 qwen extensions install https://github.com/Z-JaDe/meta-skill
 
-# Or link local extension (for development)
+# Or link local (for development)
 qwen extensions link /path/to/meta-skill
 ```
 
-**Usage:**
-
-Once installed, create a new skill by asking:
-
-```
-Create a skill for [your requirement]
-```
-
-The meta-skill will automatically orchestrate:
-1. **Intent Discovery** - Clarify requirements through progressive questioning
-2. **TDD-Driven** - Write tests first, then implement with pressure-testing
-3. **Blind Comparison** - Evaluate candidates against baseline
-4. **AI Optimization** - Iteratively optimize until convergence
-5. **Package & Deploy** - Generate validated `.skill` file
-
-### Configuration Files
+### Configuration
 
 | Platform | Configuration File |
 |----------|-------------------|
 | Claude Code | `.claude-plugin/marketplace.json` |
 | Qwen Code | `qwen-extension.json` |
-
----
-
-## Usage
-
-**To create a new skill:**
-
-```bash
-# Trigger meta-skill in Qwen/Claude
-"Create a skill for [your requirement]"
-```
-
-The meta-skill will:
-1. Clarify requirements via `intent-discovery` (including output_dir)
-2. Create tests first via `test-first`
-3. Pressure-test via `anti-rationalization` (if discipline-enforcing)
-4. Optimize docs via `ai-doc-optimizer`
-5. Package as `.skill` file to user-specified directory
 
 ---
 

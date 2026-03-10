@@ -1,6 +1,38 @@
 # Meta Skill
 
-一个自进化的技能系统：meta-skill 编排 **TDD 驱动 → 双盲检测 → AI 检索优化** 流水线，迭代创建和进化技能。
+**创建完备且检索优化的自定义 AI 技能。** meta-skill 使用 **TDD + 反模式压力测试 + 双盲检测** 确保技能完备性，通过 **冗余移除 + 歧义澄清 + 渐进式披露** 最大化 AI 检索效率。
+
+[English](README.md)
+
+---
+
+## 快速开始：创建你的第一个技能
+
+```bash
+# 在 Qwen Code 或 Claude Code 中，只需问：
+"Create a skill for [你的需求]"
+```
+
+**示例：**
+```
+"Create a skill for automatic code review"
+"Create a skill for writing unit tests"
+"Create a skill for optimizing prompts"
+```
+
+meta-skill 将自动：
+
+**确保完备性：**
+1. **TDD** - 先写测试定义预期行为
+2. **反模式压力测试** - 在压力场景下捕获并封堵漏洞
+3. **双盲检测** - 验证候选方案显著优于基线
+
+**优化 AI 检索：**
+4. **歧义澄清** - 解析模糊语义
+5. **冗余移除** - 消除重复内容
+6. **渐进式披露** - 信息结构从简单到复杂
+
+7. **打包** 为 `.skill` 文件即可使用
 
 ---
 
@@ -98,14 +130,35 @@ flowchart TB
 
 ## 技能列表
 
-| 技能 | 描述 |
-|------|------|
-| `meta-skill` | **编排器** — 协调技能创建/演进流程 |
-| `intent-discovery` | 通过渐进式提问澄清模糊需求 |
-| `test-first` | TDD 方法论：先写测试再实现 |
-| `anti-rationalization` | 压力测试规则并封堵合理化漏洞 |
-| `skill-format` | 格式化和验证 SKILL.md 文件 |
-| `ai-doc-optimizer` | 通过迭代收敛优化文档供 AI 高效读取 |
+### 内置技能库
+
+这些技能协作创建新技能：
+
+| 技能 | 在技能创建中的角色 |
+|------|-------------------|
+| `meta-skill` | **编排器** — 协调整个技能创建流水线 |
+| `intent-discovery` | **需求分析师** — 渐进式提问澄清模糊需求 |
+| `test-first` | **TDD 引擎** — 先写测试确保正确性 |
+| `anti-rationalization` | **质量保证** — 压力测试规则防止漏洞 |
+| `skill-format` | **验证器** — 确保 SKILL.md 遵循正确格式 |
+| `ai-doc-optimizer` | **优化器** — 迭代优化文档供 AI 高效读取 |
+
+### 技能如何协作
+
+当你让 meta-skill 创建新技能时：
+
+```
+用户请求 → intent-discovery (澄清) → test-first (写测试)
+           → anti-rationalization (压力测试) → ai-doc-optimizer (优化)
+           → skill-format (验证) → .skill 文件
+```
+
+每个子技能处理创建过程的特定方面，确保最终技能：
+- **定义清晰**（需求明确）
+- **测试覆盖**（TDD 驱动）
+- **健壮可靠**（抗说辞压力测试）
+- **文档完善**（AI 读取优化）
+- **格式正确**（格式验证通过）
 
 ---
 
@@ -157,21 +210,17 @@ meta-skill/
 
 ## 扩展支持
 
-### Claude Code Plugin
+本项目同时支持 **Claude Code Plugin** 和 **Qwen Code Extension**。
 
-本项目是一个 **Claude Code Plugin**，提供自进化的技能系统用于创建新技能。
+### 安装方式
 
-**安装方式：**
+**Claude Code：**
 ```bash
 /plugin marketplace add https://github.com/Z-JaDe/meta-skill
 /plugin install meta-skill
 ```
 
-### Qwen Code Extension
-
-本项目是一个 **Qwen Code Extension**，提供自进化的技能系统用于创建新技能。
-
-**安装方式：**
+**Qwen Code：**
 ```bash
 # 从远程 URL 安装
 qwen extensions install https://github.com/Z-JaDe/meta-skill
@@ -179,21 +228,6 @@ qwen extensions install https://github.com/Z-JaDe/meta-skill
 # 或链接本地扩展（开发模式）
 qwen extensions link /path/to/meta-skill
 ```
-
-**使用方法：**
-
-安装后，通过以下提问创建新技能：
-
-```
-Create a skill for [你的需求]
-```
-
-meta-skill 将自动编排：
-1. **意图发现** - 渐进式提问澄清需求
-2. **TDD 驱动** - 先写测试，再实现并压力测试
-3. **双盲检测** - 对比候选与基线
-4. **AI 优化** - 迭代优化直到收敛
-5. **打包部署** - 生成验证后的 `.skill` 文件
 
 ### 配置文件
 

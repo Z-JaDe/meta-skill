@@ -1,7 +1,7 @@
 {
   "name": "meta-skill",
   "version": "1.0.0",
-  "description": "A self-evolving skill system: meta-skill orchestrates a pipeline (intent-discovery → TDD → blind comparison → optimization) with built-in skill library to create new skills",
+  "description": "Create custom AI skills with guaranteed completeness and optimized retrieval. Uses TDD + Anti-Rationalization Pressure Testing + Blind Comparison for completeness, and redundancy removal + ambiguity clarification + progressive disclosure for AI retrieval efficiency.",
   "author": {
     "name": "zjade",
     "email": "zjade@outlook.com"
