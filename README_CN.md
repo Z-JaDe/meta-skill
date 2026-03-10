@@ -229,12 +229,21 @@ qwen extensions install https://github.com/Z-JaDe/meta-skill
 qwen extensions link /path/to/meta-skill
 ```
 
+**Cursor：**
+
+在 Cursor Agent 聊天中，从市场安装：
+
+```text
+/plugin-add meta-skill
+```
+
 ### 配置文件
 
 | 平台 | 配置文件 |
 |------|---------|
 | Claude Code | `.claude-plugin/marketplace.json` |
 | Qwen Code | `qwen-extension.json` |
+| Cursor | `.cursor-plugin/plugin.json` |
 
 ---
 

@@ -35,9 +35,15 @@ description: Use when creating new skills from scratch or improving existing ski
 | baseline | 对比基准（新技能=无技能；优化=旧版本） |
 | 显著优于基线 | 新技能：选择率>70% AND 通过率提升>20%；优化：选择率>60% AND 通过率不降低 |
 | SubAgent | 通过 Cursor Task 或 subprocess 启动的独立 Agent |
-| evals.json | 评估用例配置，含 eval 用例列表；纪律强制型使用增强模式时另含 pressure_scenarios |
+| evals.json | 评估用例配置，含 eval 用例列表；有纪律强制标签时另含 pressure_scenarios |
 | 返回 REFACTOR | 返回阶段 3 继续 TDD 循环 |
-| improvement_suggestions | analyzer.md 输出，可指定需重跑的 eval |
+| improvement_suggestions | analyzer.md 输出；指明 eval 时仅重跑该部分，否则全重跑 |
+| 主类型 | 技能的核心功能分类：参考型、编排型、模式型、技术技能型 |
+| 纪律强制标签 | 可叠加到任何主类型的属性：有强制规则 + 合规成本 + AI 易跳过 |
+| 说辞 | rationalization=AI 用于合理化跳过规则的表述 |
+| 压力叠加 | 多种压力同时作用，如时间紧+需求简单+SubAgent 失败；≥3 种 |
+| 改进需求 | 优化旧技能时：用户提出的优化方向或问题描述 |
+| 明显问题 | 歧义、冗余、结构混乱（任一即触发前置优化） |
 
 ---
 
@@ -46,11 +52,13 @@ description: Use when creating new skills from scratch or improving existing ski
 ```mermaid
 flowchart TD
     Start[用户请求创建/优化技能] --> P1[调度 intent-discovery]
-    P1 --> P2[类型判断]
-    P2 --> P2a{优化旧技能?}
-    P2a -->|是| P2b[调度 ai-doc-optimizer<br/>优化旧文档]
-    P2a -->|否| P3
-    P2b --> P3{纪律强制型?}
+    P1 --> P1a{优化旧技能?}
+    P1a -->|是| P1b{>250 行<br/>或明显问题?}
+    P1b -->|是| P1c[调度 ai-doc-optimizer]
+    P1b -->|否| P2
+    P1c --> P2[类型判断<br/>主类型 + 标签]
+    P1a -->|否| P2
+    P2 --> P3{有纪律强制标签?}
     P3 -->|是| P3a[调度 test-first<br/>TDD + Anti-Rationalization 增强]
     P3 -->|否| P3b[调度 test-first<br/>标准 TDD]
     P3a --> P4{RED-GREEN-REFACTOR 通过？}
@@ -66,6 +74,16 @@ flowchart TD
 ---
 
 ## Implementation
+
+**阶段速览**:
+| 阶段 | 调度 | 输出 |
+|------|------|------|
+| 1 意图捕捉 | intent-discovery | requirements、context |
+| 2 类型判断 | 无（本阶段判断） | skill_type（主类型+标签） |
+| 3 TDD | test-first、skill-format | SKILL.md、evals、通过 |
+| 4 盲比较 | grader、comparator、analyzer、aggregate_benchmark | 显著优于基线 |
+| 5 文档优化 | ai-doc-optimizer | 收敛文档 |
+| 6 打包 | package_skill.py | .skill 文件 |
 
 ### 阶段 1: 意图捕捉
 
@@ -100,49 +118,73 @@ flowchart TD
 - `output_dir`: 从 `context.output_dir`
 - `skill_type`: 在阶段 2 判断
 
+**优化旧技能的前置处理**（在阶段 2 之前）:
+
+| 场景 | 条件 | 操作 | 原因 |
+|------|------|------|------|
+| 优化旧技能 | >250 行 OR 存在明显问题 | 调度 `ai-doc-optimizer`，再进入阶段 2 | 防止 TDD 阶段丢失语义 |
+| 优化旧技能 | ≤250 行 AND 无明显问题 | 跳过前置优化，直接进入阶段 2 | 避免不必要开销 |
+| 创建新技能 | N/A | 直接进入阶段 2 | 无旧文档需要优化 |
+
 ### 阶段 2: 技能类型判断
 
 **输入**: 阶段 1 的 intent-discovery 输出  
-**输出**: 判断 `skill_type`，添加到 context 中
+**输出**: 判断 `skill_type`（主类型 + 纪律强制标签），添加到 context 中
+
+**判断流程**（两步）:
 
 ```mermaid
 flowchart TD
-    Start[开始] --> Q1{是否强制规则？<br/>有合规成本？}
-    Q1 -->|是 | Type1[纪律强制型]
-    Q1 -->|否 | Q2{是否 API/语法/工具文档？}
-    Q2 -->|是 | Type4[参考型]
-    Q2 -->|否 | Q3{是否心智模型/决策框架？}
-    Q3 -->|是 | Type3[模式型]
-    Q3 -->|否 | Type2[技术技能型]
-    Type1 --> T1[TDD + Anti-Rationalization 增强]
-    Type2 --> T2[标准 TDD]
-    Type3 --> T3[标准 TDD]
-    Type4 --> T4[标准 TDD]
+    Start[开始] --> Q1{核心功能？}
+    Q1 -->|API/语法文档| Type1[参考型]
+    Q1 -->|调度技能/Agent/脚本| Type2[编排型]
+    Q1 -->|决策框架/权衡原则| Type3[模式型]
+    Q1 -->|具体操作步骤| Type4[技术技能型]
+    
+    Type1 --> Q2{有强制规则<br/>+ 合规成本<br/>+ AI 易跳过？}
+    Type2 --> Q2
+    Type3 --> Q2
+    Type4 --> Q2
+    
+    Q2 -->|是| Label[+ 纪律强制标签]
+    Q2 -->|否| TDD1[标准 TDD]
+    Label --> TDD2[TDD + Anti-Rationalization 增强]
 ```
 
-| 类型 | 特征 | TDD 模式 |
-|------|------|----------|
-| 纪律强制型 | 强制规则、有合规成本、用户可合理化跳过 | TDD + Anti-Rationalization 增强 |
-| 技术技能型 | how-to、工具使用 | 标准 TDD |
-| 模式型 | 心智模型、决策框架 | 标准 TDD |
-| 参考型 | API/语法/工具文档 | 标准 TDD |
+**主类型定义**:
 
-**额外操作**:
-| 场景 | 条件 | 操作 | 原因 |
-|------|------|------|------|
-| 优化旧技能 | 旧文档行数 >250 OR 存在明显问题（歧义、冗余、结构混乱） | 阶段 3 前调度 `ai-doc-optimizer`，优化旧技能文档 | 防止 TDD 阶段丢失语义 |
-| 优化旧技能 | 旧文档行数 ≤250 AND 整体无明显问题 | 跳过提前优化，直接进入阶段 3 | 避免不必要的优化开销 |
+| 主类型 | 核心问题 | 特征 | 例子 |
+|--------|---------|------|------|
+| 参考型 | "语法/API 是什么？" | 文档、速查表、配置说明 | Git 命令参考、API 文档 |
+| 编排型 | "调度谁？按什么顺序？" | 调度其他技能/Agent/脚本 | **Meta-Skill**、CI/CD 流程 |
+| 模式型 | "怎么选？如何权衡？" | 决策框架、判断标准、权衡原则 | 架构设计原则、测试策略 |
+| 技术技能型 | "怎么做？具体步骤？" | 操作步骤、工具使用 | 配置 Git、部署应用 |
+
+**纪律强制标签**（可叠加到任何主类型）:
+
+| 判断标准 | 说明 | 例子 |
+|---------|------|------|
+| 有强制规则 | 明确的"必须"或"禁止" | "必须先写测试"、"禁止跳过澄清" |
+| 有合规成本 | 遵守规则需要额外工作量 | 调度 SubAgent 比自己写慢 |
+| AI 易合理化跳过 | AI 容易找借口不遵守 | "这个很简单，不需要测试" |
+
+**TDD 模式映射**:
+
+| 主类型 + 标签 | TDD 模式 | 说明 |
+|--------------|---------|------|
+| 任意主类型 + 纪律强制标签 | TDD + Anti-Rationalization 增强 | RED/GREEN/REFACTOR 各阶段融入压力测试、说辞捕获、漏洞封堵 |
+| 任意主类型（无标签） | 标准 TDD | 按 test-first 标准流程执行 |
 
 ### 阶段 3: TDD 循环（RED-GREEN-REFACTOR）
 
 **调度**: [必须] 技能 `test-first`  
 **最大迭代**: 5 次（超过→人工审查）
 
-**模式选择**:
-| 技能类型 | TDD 模式 | 说明 |
-|---------|---------|------|
-| 纪律强制型 | TDD + Anti-Rationalization 增强 | 在 RED/GREEN/REFACTOR 各阶段融入 anti-rationalization 策略 |
-| 其他类型 | 标准 TDD | 按 test-first 标准流程执行 |
+**测试产物**（阶段 3-4 通用）: 必须全部置于 `.test/`：
+- evals.json、grading.json、benchmark.json、comparison_result.json、improvement_suggestions、failure.md
+- 路径：`iteration-N/eval-M/{candidate,baseline}/run-K/`
+
+**模式选择**: 按阶段 2 的 TDD 模式映射执行（有纪律强制标签→增强；无→标准）
 
 #### 标准 TDD 流程
 
@@ -167,9 +209,9 @@ flowchart LR
 | GREEN | SubAgent 调度 skill-format 编写 SKILL.md → 执行 eval（加载技能）→ 验证测试通过 | SubAgent | SKILL.md（标准章节） |
 | REFACTOR | 需要改进 → 修订技能 → 泛化+精简 | 无 | 优化后的 SKILL.md |
 
-#### 纪律强制型的 Anti-Rationalization 增强
+#### Anti-Rationalization 增强（有纪律强制标签）
 
-仅适用于纪律强制型技能。在标准 TDD 基础上，各阶段增加 anti-rationalization 策略：
+仅适用于有纪律强制标签的技能。在标准 TDD 基础上，各阶段增加 anti-rationalization 策略：
 
 ```mermaid
 flowchart LR
@@ -186,7 +228,7 @@ flowchart LR
 
 | 步骤 | 标准 TDD | Anti-Rationalization 增强 | 输出 |
 |------|---------|--------------------------|------|
-| RED | 创建 evals.json<br/>记录失败案例 | + 设计压力场景（≥3种压力叠加）<br/>+ 对抗测试捕获说辞（逐字记录） | evals.json 含 pressure_scenarios<br/>说辞记录（逐字） |
+| RED | 创建 evals.json<br/>记录失败案例 | + 设计压力场景（见术语：压力叠加）<br/>+ 对抗测试捕获说辞（逐字记录） | evals.json 含 pressure_scenarios<br/>说辞记录（逐字） |
 | GREEN | 编写 SKILL.md<br/>验证测试通过 | + 说服原则加固（权威+承诺+社会证明）<br/>+ 漏洞封堵（No exceptions + 逐一禁止）<br/>+ 设计 Red Flags 和 Anti-Patterns | SKILL.md 含：<br/>- 标准章节<br/>- 纪律执行章节（Red Flags 表格）<br/>- Anti-Patterns 章节 |
 | REFACTOR | 需要改进<br/>修订技能 | + 重测验证（压力场景下）<br/>+ 发现新说辞 → 继续加固 | 迭代直到无新说辞 |
 
@@ -224,7 +266,7 @@ flowchart TD
 
 **路径**: `.test/iteration-N/eval-M/{candidate,baseline}/run-K/`（N=迭代编号，M=eval 编号，K=run 编号）  
 **指标**: 选择率=comparator 选 candidate 的比例；通过率=grader 断言通过比例  
-**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）→ 只重跑 improvement_suggestions 指定的 eval，未指定则全重跑
+**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）→ 重跑范围见术语 improvement_suggestions
 
 ### 阶段 5: 文档优化
 
@@ -239,8 +281,7 @@ flowchart TD
 ### 阶段 6: 打包部署
 
 ```bash
-cd <meta-skill-directory>
-PYTHONPATH=. python3 scripts/package_skill.py .
+python3 scripts/package_skill.py .
 ```
 
 **输出**: `.skill` 文件
@@ -263,7 +304,7 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 | ai-doc-optimizer | 2（优化旧技能） | 优化旧技能必须 |
 | test-first | 3 | 必须 |
 | skill-format | 3 | 必须 |
-| anti-rationalization | 3（纪律强制型） | 参考（策略融入 TDD） |
+| anti-rationalization | 3（有纪律强制标签） | 参考（策略融入 TDD） |
 | agents/grader.md | 4 步骤 2 | 必须 |
 | agents/comparator.md | 4 步骤 4 | 必须 |
 | agents/analyzer.md | 4 步骤 5 | 必须 |
@@ -285,7 +326,7 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 | TDD 失败后继续 | "再试一次可能就过了" | 必须 REFACTOR，不能重复失败 |
 | Blind Comparison 未达标继续 | "70% 太严格了" | 降低标准=降低质量 |
 | 自己执行任务 | "这个很快，我直接做" | meta-skill 不执行，只调度 |
-| 纪律强制型未应用 anti-rationalization 策略 | "压力场景不重要" | TDD 各阶段必须融入压力测试、说辞捕获、漏洞封堵 |
+| 有纪律强制标签但未应用增强策略 | "压力场景不重要" | 有标签时 TDD 各阶段必须融入压力测试、说辞捕获、漏洞封堵 |
 
 **核心原则**: 见 Overview + 硬性限制；各阶段技能/SubAgent/脚本均须调度，不可跳过。
 
@@ -293,14 +334,11 @@ PYTHONPATH=. python3 scripts/package_skill.py .
 
 ## Failure Handling
 
-| 类型 | 处理 |
-|------|------|
+| 类型/情况 | 处理 |
+|-----------|------|
 | 可修复 | 按错误信息修复后重试 |
 | 需重构 | 返回 REFACTOR |
-| 超过迭代上限 | 记录到 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议下一步）→ 人工审查 |
-
-| 情况 | 处理 |
-|------|------|
+| 超过迭代上限 | 记录 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议下一步）→ 人工审查 |
 | 用户拒绝回答 | 基于已有信息继续，标记假设到 boundaries |
 | 需求频繁变更 | 确定当前版本→继续→变更作为新迭代 |
 | 范围扩大 | 提醒边界→新需求放入 out_of_scope |

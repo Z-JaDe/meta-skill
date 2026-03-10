@@ -230,9 +230,11 @@ qwen extensions link /path/to/meta-skill
 ```
 
 **Cursor:**
-```bash
-# Open Cursor → Settings → AI → Plugins → Add Plugin
-# Select the .cursor-plugin folder from this repository
+
+In Cursor Agent chat, install from marketplace:
+
+```text
+/plugin-add meta-skill
 ```
 
 ### Configuration
