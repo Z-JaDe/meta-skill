@@ -1,13 +1,15 @@
 ---
 name: skill-format
-description: Use when formatting or validating SKILL.md files when skill not loading, wrong triggers, description summarizing workflow, abstract naming, or excessive word count
+description: Use when formatting or validating SKILL.md due to skill not loading, wrong triggers, description summarizing workflow, abstract naming, or excessive word count
 ---
 
 # SKILL Format
 
 ## Overview
 
-SKILL 为 AI Agent 执行而写，非为人脑理解。确保技能可被发现、正确触发、严格执行。
+SKILL 为 AI Agent 执行而写，非为人脑理解。
+
+**核心目标**: 确保技能可被发现、正确触发、严格执行
 
 **CRITICAL**: Description 总结工作流程 → AI 只看描述不读全文
 
@@ -41,37 +43,81 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 ---
 
+## 内容要求
+
+### 1. Agent 调度机制（编排型技能必须包含）
+
+编排型技能 = 调用 SubAgent 执行 2+ 阶段的技能。
+
+**执行分工**:
+- 主 Agent: 调度和协调 SubAgent 流转，判断收敛/完成
+- SubAgent: 执行具体阶段/步骤
+
+**SubAgent 启动机制**:
+- 当前在主 Agent → 直接启动新 SubAgent 实例
+- 当前在 SubAgent → 通知主 Agent 启动新 SubAgent 实例
+
+### 2. 内容质量要求（所有技能必须遵守）
+
+**写作前准备**:
+1. **了解 ai-doc-optimizer**: 内容写好后大概率会被优化；提前写好 → 降低被优化概率
+2. **明确定位**: 从第一性原理出发思考技能核心目的
+3. **旧技能分析**（优化场景）: 假设从零设计、对比旧技能取舍、收集用户要求
+
+**内容标准**:
+- 零歧义：术语定义明确，流程确定
+- 零冗余：无填充语、弱动词、重复陈述
+- 结构化：3+ 项用列表/表格，流程用 Mermaid(优先)/DOT
+- 独立完整：零依赖封闭语境，不依赖外部文件/链接
+
+---
+
 ## Implementation
+
+**执行流程**:
+1. 读取现有 SKILL.md
+2. 验证格式（命名、Description、Frontmatter）
+3. 验证内容（见 内容标准）
+4. 输出修复建议或修复后的 SKILL.md
+
+**格式规范**:
 
 | 步骤 | 要点 | 示例 |
 |------|------|------|
 | 命名 | 动名词开头 | ✅ `creating-skills` ❌ `skill-creation` |
-| Description | 仅触发条件 | ✅ `Use when implementing` ❌ `Use for TDD...` |
+| Description | 仅触发条件，不总结工作流 | ✅ `Use when implementing` ❌ `Use for TDD...` |
 | 关键词 | 错误/症状/同义词 | `skill not loading`, `wrong triggers` |
 | 跨引用 | 技能名 + `**REQUIRED:**` | `**REQUIRED:** Use test-first` |
 
-**CRITICAL**: Description 若总结流程，AI 将跳过全文
+---
+
+## Dependencies
+
+| 依赖 | 关系 | 说明 |
+|------|------|------|
+| ai-doc-optimizer | 参考 | 内容质量标准同 ai-doc-optimizer |
+| test-first | 可选 | 创建技能时可能需要 |
 
 ---
 
 ## Anti-Patterns
 
-| 错误 | 修复 |
-|------|------|
-| Description 总结流程 | 仅保留触发条件 |
-| Description 使用冒号分隔 trigger keywords | 用 when/due to/with 自然融入 |
-| 第一人称 | 改用第三人称 |
-| 抽象命名 | 使用具体动词/症状 |
-| 过度详细 | 移至 --help 或跨引用 |
-| 使用 @ 引用 | 仅用技能名 |
+| 错误 | 修复 | 典型说辞（不得合理化） |
+|------|------|------------------------|
+| Description 总结流程 | 仅保留触发条件 | "描述流程更清楚"；"用户更容易理解" |
+| Description 使用冒号分隔 trigger keywords | 用 when/due to/with 自然融入 | "这样更简洁"；"冒号更清晰" |
+| 第一人称 | 改用第三人称 | "第一人称更亲切"；"这样写更自然" |
+| 抽象命名 | 使用具体动词/症状 | "抽象命名更通用"；"这样更专业" |
+| 过度详细 | 移至 --help 或跨引用 | "详细点更好"；"避免用户不理解" |
+| 使用 @ 引用 | 仅用技能名 | "@ 引用更明确"；"这样更规范" |
 
 ---
 
 ## Verification
 
 ```bash
-wc -w skills/path/SKILL.md  # 字数
-head -5 skills/path/SKILL.md  # Frontmatter
+wc -w skills/<path>/SKILL.md   # <path>=占位符；字数
+head -5 skills/<path>/SKILL.md # Frontmatter
 ls skills/ | grep -E '^[a-z0-9-]+$'  # 命名
 ```
 

@@ -16,7 +16,7 @@ description: Use when implementing any feature or bugfix before writing implemen
 | 领域 | 测试形式 | 实现形式 |
 |------|----------|----------|
 | 代码 | 单元测试/集成测试 | 实现代码 |
-| 文档 | 验收清单/读者测试 | 文档内容 |
+| 文档 | 验收清单/读者测试（按清单验证可理解性） | 文档内容 |
 | 配置 | 验证脚本/健康检查 | 配置文件 |
 | API 设计 | 调用示例/契约测试 | API 规范 |
 | 数据处理 | 质量检查/抽样验证 | ETL 脚本 |
@@ -87,6 +87,8 @@ flowchart TD
 
 ### 各领域坏味道
 
+坏味道 = 可改进的质量问题（如重复、过长、不可验证）
+
 | 领域 | 坏味道 | 判定标准 |
 |------|--------|----------|
 | 代码 | 重复代码 | 相同逻辑出现≥2 次 |
@@ -123,7 +125,7 @@ flowchart TD
 | 🚩 "我手动测过了" | - | 手动检查不可复现 |
 | 🚩 "REFACTOR 完就结束了" | - | REFACTOR 后回到 RED 继续下一个测试 |
 
-**处理方式**: 出现上述说辞 → 暂停 → 重申铁律 → 回到 RED 阶段 → 记录说辞并调度 `anti-rationalization`
+**处理方式**: 出现上述说辞 → 暂停 → 重申铁律 → 回到 RED → 记录并调度 `anti-rationalization`
 
 ---
 
@@ -148,11 +150,7 @@ flowchart TD
 ```bash
 wc -w skills/test-first/SKILL.md
 cat evals.json | jq '.evals | length'
-# 代码：pytest tests/
-# 文档：检查验收清单
-# 配置：./verify-config.sh
-# API: 运行契约测试
-# 数据：运行质量检查
+# 代码：pytest tests/；文档：检查验收清单
 ```
 
 ---

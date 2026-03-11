@@ -22,7 +22,22 @@ description: Use when creating new skills from scratch or improving existing ski
 
 ---
 
+## 适用与不适用
+
+| 适用（触发 meta-skill） | 不适用（停止并引导） |
+|----------------------|----------------------|
+| 创建新技能 | 修复技能 bug → 直接修复或引导使用 test-first |
+| 优化现有技能 | 简单文档编辑 → 直接使用 ai-doc-optimizer |
+| 技能质量提升 | 格式验证 → 直接使用 skill-format |
+| 技能重构 | 紧急修复（先止血、事后补流程）→ 直接修复 |
+
+**Bug 检测**: 用户描述"技能没触发""技能执行失败""格式错误"等 → 视为 Bug，**不触发 meta-skill**，引导使用对应技能或直接修复。
+
+---
+
 ## Terminology
+
+**核心术语**:
 
 | 术语 | 定义 |
 |------|------|
@@ -34,15 +49,20 @@ description: Use when creating new skills from scratch or improving existing ski
 | candidate | 待验证的技能版本（新技能或优化后版本） |
 | baseline | 对比基准（新技能=无技能；优化=旧版本） |
 | 显著优于基线 | 新技能：选择率>70% AND 通过率提升>20%；优化：选择率>60% AND 通过率不降低 |
-| SubAgent | 通过 Cursor Task 或 subprocess 启动的独立 Agent |
+| SubAgent | 独立 Agent 实例。当前在主 Agent 则直接启动新实例；当前在 SubAgent 则通知主 Agent 启动 |
+
+**辅助术语**:
+
+| 术语 | 定义 |
+|------|------|
 | evals.json | 评估用例配置，含 eval 用例列表；有纪律强制标签时另含 pressure_scenarios |
 | 返回 REFACTOR | 返回阶段 3 继续 TDD 循环 |
 | improvement_suggestions | analyzer.md 输出；指明 eval 时仅重跑该部分，否则全重跑 |
-| 主类型 | 技能的核心功能分类：参考型、编排型、模式型、技术技能型 |
+| 主类型 | 技能核心功能分类：参考型、编排型、模式型、技术技能型 |
 | 纪律强制标签 | 可叠加到任何主类型的属性：有强制规则 + 合规成本 + AI 易跳过 |
 | 说辞 | rationalization=AI 用于合理化跳过规则的表述 |
-| 压力叠加 | 多种压力同时作用，如时间紧+需求简单+SubAgent 失败；≥3 种 |
-| 改进需求 | 优化旧技能时：用户提出的优化方向或问题描述 |
+| 压力叠加 | 多种压力同时作用（如时间紧+需求简单+SubAgent 失败）；≥3 种 |
+| 改进需求 | 优化旧技能时用户提出的优化方向或问题描述 |
 | 明显问题 | 歧义、冗余、结构混乱（任一即触发前置优化） |
 
 ---
@@ -51,13 +71,10 @@ description: Use when creating new skills from scratch or improving existing ski
 
 ```mermaid
 flowchart TD
-    Start[用户请求创建/优化技能] --> P1[调度 intent-discovery]
-    P1 --> P1a{优化旧技能?}
-    P1a -->|是| P1b{>250 行<br/>或明显问题?}
-    P1b -->|是| P1c[调度 ai-doc-optimizer]
-    P1b -->|否| P2
-    P1c --> P2[类型判断<br/>主类型 + 标签]
-    P1a -->|否| P2
+    Start[用户请求创建/优化技能] --> CheckScope{适用场景?}
+    CheckScope -->|Bug/格式/简单编辑| Reject[停止: 引导使用对应工具]
+    CheckScope -->|创建/优化技能| P1[调度 intent-discovery]
+    P1 --> P2[类型判断<br/>主类型 + 标签]
     P2 --> P3{有纪律强制标签?}
     P3 -->|是| P3a[调度 test-first<br/>TDD + Anti-Rationalization 增强]
     P3 -->|否| P3b[调度 test-first<br/>标准 TDD]
@@ -70,6 +87,33 @@ flowchart TD
     P6 -->|是 | P7[调度 ai-doc-optimizer<br/>优化最终文档]
     P7 --> P8[package_skill.py]
 ```
+
+---
+
+## Output Path Contract
+
+**所有阶段 3-4 产出必须落于**: `.test/`
+
+| 阶段 | 产出 | 路径 | 说明 |
+|------|------|------|------|
+| 3 TDD | evals.json | `.test/iteration-N/evals.json` | N=迭代编号 |
+| 3 TDD | grading.json | `.test/iteration-N/eval-M/{candidate,baseline}/run-K/grading.json` | M=eval 编号，K=run 编号（每 eval 跑 3 次） |
+| 4 盲比较 | benchmark.json | `.test/iteration-N/benchmark.json` | |
+| 4 盲比较 | comparison_result.json | `.test/iteration-N/comparison_result.json` | |
+| 4 盲比较 | improvement_suggestions | `.test/iteration-N/improvement_suggestions` | |
+| 失败 | failure.md | `.test/iteration-N/failure.md` | |
+
+---
+
+## 文档内容约束
+
+| 文档 | 应包含 | 应避免 |
+|------|--------|--------|
+| SKILL.md | 触发条件、核心模式、实现步骤、依赖关系、反模式 | 完整代码实现、过度详细的示例 |
+| evals.json | 测试用例、输入、期望输出、压力场景（有纪律强制标签时） | 模糊的期望、缺少边界条件 |
+| improvement_suggestions | 具体问题、改进方向、重跑范围 | 泛泛而谈、缺少可执行建议 |
+
+*本表即为各阶段产出的内容约束权威定义。*
 
 ---
 
@@ -89,49 +133,24 @@ flowchart TD
 
 **调度**: [必须] 技能 `intent-discovery`，渐进式提问澄清需求
 
-**meta-skill 调用时传递**:
-- `requirement_type`: "skill-creation"（固定）
-- `context`: `{"language": "zh-CN | en-US", "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"}`
+| 传递项 | 值 |
+|--------|-----|
+| requirement_type | "skill-creation"（固定） |
+| context | `{"language": "zh-CN \| en-US", "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"}` |
 
-**intent-discovery 输出**:
-```json
-{
-  "requirement_type": "skill-creation",
-  "requirements": {"what": "...", "when": "...", "output": "...", "test": "..."},
-  "boundaries": {"in_scope": [], "out_of_scope": []},
-  "dependencies": [],
-  "constraints": [],
-  "context": {
-    "skill_name": "kebab-case-name",
-    "description": "Use when [触发条件]",
-    "language": "zh-CN | en-US",
-    "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"
-  },
-  "next_steps": []
-}
-```
+**intent-discovery 输出**（JSON 结构）:
+- `requirement_type`: "skill-creation"
+- `requirements`: {what, when, output, test}
+- `boundaries`: {in_scope, out_of_scope}
+- `context`: {skill_name, description, language, output_dir}
+- `next_steps`: []
 
-**meta-skill 提取**:
-- `skill_name`: 从 `context.skill_name`
-- `description`: 从 `context.description`
-- `language`: 从 `context.language`
-- `output_dir`: 从 `context.output_dir`
-- `skill_type`: 在阶段 2 判断
-
-**优化旧技能的前置处理**（在阶段 2 之前）:
-
-| 场景 | 条件 | 操作 | 原因 |
-|------|------|------|------|
-| 优化旧技能 | >250 行 OR 存在明显问题 | 调度 `ai-doc-optimizer`，再进入阶段 2 | 防止 TDD 阶段丢失语义 |
-| 优化旧技能 | ≤250 行 AND 无明显问题 | 跳过前置优化，直接进入阶段 2 | 避免不必要开销 |
-| 创建新技能 | N/A | 直接进入阶段 2 | 无旧文档需要优化 |
+**meta-skill 提取**: skill_name、description、language、output_dir 从 context；skill_type 在阶段 2 判断
 
 ### 阶段 2: 技能类型判断
 
 **输入**: 阶段 1 的 intent-discovery 输出  
-**输出**: 判断 `skill_type`（主类型 + 纪律强制标签），添加到 context 中
-
-**判断流程**（两步）:
+**输出**: skill_type（主类型 + 纪律强制标签）加入 context
 
 ```mermaid
 flowchart TD
@@ -140,19 +159,16 @@ flowchart TD
     Q1 -->|调度技能/Agent/脚本| Type2[编排型]
     Q1 -->|决策框架/权衡原则| Type3[模式型]
     Q1 -->|具体操作步骤| Type4[技术技能型]
-    
-    Type1 --> Q2{有强制规则<br/>+ 合规成本<br/>+ AI 易跳过？}
+    Type1 --> Q2{有强制规则+合规成本+AI易跳过？}
     Type2 --> Q2
     Type3 --> Q2
     Type4 --> Q2
-    
     Q2 -->|是| Label[+ 纪律强制标签]
     Q2 -->|否| TDD1[标准 TDD]
     Label --> TDD2[TDD + Anti-Rationalization 增强]
 ```
 
-**主类型定义**:
-
+**主类型**:
 | 主类型 | 核心问题 | 特征 | 例子 |
 |--------|---------|------|------|
 | 参考型 | "语法/API 是什么？" | 文档、速查表、配置说明 | Git 命令参考、API 文档 |
@@ -161,7 +177,6 @@ flowchart TD
 | 技术技能型 | "怎么做？具体步骤？" | 操作步骤、工具使用 | 配置 Git、部署应用 |
 
 **纪律强制标签**（可叠加到任何主类型）:
-
 | 判断标准 | 说明 | 例子 |
 |---------|------|------|
 | 有强制规则 | 明确的"必须"或"禁止" | "必须先写测试"、"禁止跳过澄清" |
@@ -169,33 +184,26 @@ flowchart TD
 | AI 易合理化跳过 | AI 容易找借口不遵守 | "这个很简单，不需要测试" |
 
 **TDD 模式映射**:
-
-| 主类型 + 标签 | TDD 模式 | 说明 |
-|--------------|---------|------|
-| 任意主类型 + 纪律强制标签 | TDD + Anti-Rationalization 增强 | RED/GREEN/REFACTOR 各阶段融入压力测试、说辞捕获、漏洞封堵 |
-| 任意主类型（无标签） | 标准 TDD | 按 test-first 标准流程执行 |
+| 主类型 + 标签 | TDD 模式 |
+|--------------|---------|
+| 任意主类型 + 纪律强制标签 | TDD + Anti-Rationalization 增强 |
+| 任意主类型（无标签） | 标准 TDD |
 
 ### 阶段 3: TDD 循环（RED-GREEN-REFACTOR）
 
 **调度**: [必须] 技能 `test-first`  
 **最大迭代**: 5 次（超过→人工审查）
 
-**测试产物**（阶段 3-4 通用）: 必须全部置于 `.test/`：
-- evals.json、grading.json、benchmark.json、comparison_result.json、improvement_suggestions、failure.md
-- 路径：`iteration-N/eval-M/{candidate,baseline}/run-K/`
+**模式选择**: 见阶段 2 TDD 模式映射
 
-**模式选择**: 按阶段 2 的 TDD 模式映射执行（有纪律强制标签→增强；无→标准）
-
-#### 标准 TDD 流程
-
-适用于技术技能型、模式型、参考型。
+#### 标准 TDD（技术技能型、模式型、参考型）
 
 ```mermaid
 flowchart LR
-    R1[创建 evals.json] --> R2[SubAgent 执行<br/>不加载技能]
+    R1[创建 evals.json] --> R2[SubAgent 执行 不加载技能]
     R2 --> R3[记录失败案例]
-    R3 --> G1[SubAgent: skill-format<br/>编写 SKILL.md]
-    G1 --> G2[SubAgent: 执行 eval<br/>加载技能]
+    R3 --> G1[SubAgent: skill-format 编写 SKILL.md]
+    G1 --> G2[SubAgent: 执行 eval 加载技能]
     G2 --> G3[验证测试通过]
     G3 --> RF{需要改进?}
     RF -->|是| RF1[修订技能→泛化+精简]
@@ -203,36 +211,25 @@ flowchart LR
     RF -->|否| Done[通过]
 ```
 
-| 步骤 | 操作 | 调度 | 输出 |
-|------|------|------|------|
-| RED | 创建 evals.json → SubAgent 执行（不加载技能）→ 记录失败案例 | SubAgent | evals.json<br/>失败案例记录 |
-| GREEN | SubAgent 调度 skill-format 编写 SKILL.md → 执行 eval（加载技能）→ 验证测试通过 | SubAgent | SKILL.md（标准章节） |
-| REFACTOR | 需要改进 → 修订技能 → 泛化+精简 | 无 | 优化后的 SKILL.md |
+| 步骤 | 操作 | 输出 |
+|------|------|------|
+| RED | 创建 evals.json → SubAgent 执行（不加载技能）→ 记录失败案例 | evals.json、失败案例记录 |
+| GREEN | SubAgent 调度 skill-format 编写 SKILL.md → 执行 eval（加载技能）→ 验证通过 | SKILL.md |
+| REFACTOR | 需要改进 → 修订技能 → 泛化+精简 | 优化后的 SKILL.md |
 
 #### Anti-Rationalization 增强（有纪律强制标签）
 
-仅适用于有纪律强制标签的技能。在标准 TDD 基础上，各阶段增加 anti-rationalization 策略：
+在标准 TDD 基础上，各阶段增加 anti-rationalization 策略：
 
-```mermaid
-flowchart LR
-    R1[创建 evals.json<br/>+ 设计压力场景] --> R2[SubAgent 执行<br/>不加载技能]
-    R2 --> R3[记录违反行为<br/>+ 捕获说辞]
-    R3 --> G1[SubAgent: skill-format<br/>编写 SKILL.md<br/>+ 说服原则加固]
-    G1 --> G2[SubAgent: 执行 eval<br/>加载技能<br/>+ 压力场景测试]
-    G2 --> G3[验证遵守规则<br/>+ 设计 Red Flags]
-    G3 --> RF{发现新说辞?}
-    RF -->|是| RF1[修订技能→加固漏洞]
-    RF1 --> R1
-    RF -->|否| Done[通过]
-```
+| 步骤 | 标准 TDD | 增强内容 |
+|------|---------|----------|
+| RED | 创建 evals.json、记录失败案例 | + 设计压力场景（见术语：压力叠加）<br/>+ 对抗测试捕获说辞（逐字记录） |
+| GREEN | 编写 SKILL.md、验证通过 | + 说服原则加固（权威+承诺+社会证明）<br/>+ 漏洞封堵（No exceptions + 逐一禁止）<br/>+ 设计 Red Flags 和 Anti-Patterns |
+| REFACTOR | 修订技能 | + 重测验证（压力场景下）<br/>+ 发现新说辞 → 继续加固 |
 
-| 步骤 | 标准 TDD | Anti-Rationalization 增强 | 输出 |
-|------|---------|--------------------------|------|
-| RED | 创建 evals.json<br/>记录失败案例 | + 设计压力场景（见术语：压力叠加）<br/>+ 对抗测试捕获说辞（逐字记录） | evals.json 含 pressure_scenarios<br/>说辞记录（逐字） |
-| GREEN | 编写 SKILL.md<br/>验证测试通过 | + 说服原则加固（权威+承诺+社会证明）<br/>+ 漏洞封堵（No exceptions + 逐一禁止）<br/>+ 设计 Red Flags 和 Anti-Patterns | SKILL.md 含：<br/>- 标准章节<br/>- 纪律执行章节（Red Flags 表格）<br/>- Anti-Patterns 章节 |
-| REFACTOR | 需要改进<br/>修订技能 | + 重测验证（压力场景下）<br/>+ 发现新说辞 → 继续加固 | 迭代直到无新说辞 |
+**输出**: evals.json 含 pressure_scenarios；SKILL.md 含标准章节 + 纪律执行章节（Red Flags 表格）+ Anti-Patterns
 
-**参考**: anti-rationalization 技能提供完整的 5 阶段策略（设计压力场景 → 捕获说辞 → 说服原则加固 → 漏洞封堵 → 重测验证），在 TDD 流程中按需应用。
+**参考**: 按需调度 anti-rationalization 技能。
 
 ### 阶段 4: Blind Comparison
 
@@ -242,31 +239,29 @@ flowchart LR
 | 创建新技能 | new-skill vs baseline | baseline=无技能运行 |
 | 优化旧技能 | new-skill vs old-skill | old-skill=优化前版本 |
 
-**最大迭代**: 3 轮（每轮：每 eval 用例跑 3 次 candidate + 3 次 baseline）
+**最大迭代**: 3 轮（每轮：每 eval 跑 3 次 candidate + 3 次 baseline）
 
 ```mermaid
 flowchart TD
-    S1[并行运行 candidate/baseline<br/>每 eval 3 次] --> S2[grader.md 评估 expectations<br/>→ grading.json]
-    S2 --> S3[aggregate_benchmark.py<br/>→ benchmark.json]
-    S3 --> S4[comparator.md 盲评<br/>→ comparison_result.json]
-    S4 --> S5[analyzer.md 分析<br/>→ improvement_suggestions]
-    S5 --> S6{新技能: 选择率>70% AND 通过率提升>20%<br/>优化: 选择率>60% AND 通过率不降低?}
+    S1[并行运行 candidate/baseline 每 eval 3 次] --> S2[grader.md→grading.json]
+    S2 --> S3[aggregate_benchmark.py→benchmark.json]
+    S3 --> S4[comparator.md 盲评→comparison_result.json]
+    S4 --> S5[analyzer.md→improvement_suggestions]
+    S5 --> S6{显著优于基线?}
     S6 -->|是| Pass[通过]
     S6 -->|否| Refactor[返回 REFACTOR]
 ```
 
-| 步骤 | 操作 | 调度 |
-|------|------|------|
-| 1 | SubAgent 并行运行 candidate 和 baseline（每 eval 3 次）| SubAgent |
-| 2 | SubAgent 加载 `agents/grader.md`，评估 expectations→grading.json | SubAgent |
-| 3 | 执行 `python -m scripts.aggregate_benchmark .test/iteration-N --skill-name <name>` | 脚本 |
-| 4 | SubAgent 加载 `agents/comparator.md`，盲评→comparison_result.json | SubAgent |
-| 5 | SubAgent 加载 `agents/analyzer.md`，分析→improvement_suggestions | SubAgent |
-| 6 | 判断：新技能（选择率>70% AND 通过率提升>20%）/ 优化（选择率>60% AND 通过率不降低）| 无 |
+| 步骤 | 调度 |
+|------|------|
+| 1 并行运行 candidate/baseline | SubAgent |
+| 2 grader→grading.json | SubAgent |
+| 3 aggregate_benchmark | 脚本 |
+| 4 comparator 盲评→comparison_result.json | SubAgent |
+| 5 analyzer→improvement_suggestions | SubAgent |
+| 6 判断显著优于基线 | 无 |
 
-**路径**: `.test/iteration-N/eval-M/{candidate,baseline}/run-K/`（N=迭代编号，M=eval 编号，K=run 编号）  
-**指标**: 选择率=comparator 选 candidate 的比例；通过率=grader 断言通过比例  
-**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）→ 重跑范围见术语 improvement_suggestions
+**路径**: 见 Output Path Contract。**指标**: 选择率=comparator 选 candidate 比例；通过率=grader 断言通过比例。**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）。
 
 ### 阶段 5: 文档优化
 
@@ -286,7 +281,7 @@ python3 scripts/package_skill.py .
 
 **输出**: `.skill` 文件
 
-**验证规则**（由 `scripts/quick_validate.py` 执行）:
+**验证规则**（scripts/quick_validate.py 执行）:
 | 规则 | 要求 |
 |------|------|
 | 命名 | kebab-case |
@@ -296,37 +291,52 @@ python3 scripts/package_skill.py .
 
 ---
 
+## HARD-GATE 检查点
+
+| 序号 | 检查项 | 阶段 |
+|------|--------|------|
+| 1 | 是否通过 intent-discovery 澄清需求？ | 1 |
+| 2 | 是否判断技能类型（主类型+标签）？ | 2 |
+| 3 | 是否通过 SubAgent 执行 TDD？ | 3 |
+| 4 | evals.json 是否包含压力场景（有纪律强制标签时）？ | 3 |
+| 5 | SKILL.md 是否包含 Red Flags 和 Anti-Patterns（有纪律强制标签时）？ | 3 |
+| 6 | 是否通过 Blind Comparison 且达标？ | 4 |
+| 7 | 产出是否位于 `.test/iteration-N/`？ | 3-4 |
+| 8 | 是否通过 ai-doc-optimizer 优化最终文档？ | 5 |
+| 9 | 是否通过 package_skill.py 打包？ | 6 |
+
+---
+
 ## Dependencies
 
 | 依赖 | 阶段 | 必须/可选 |
 |------|------|----------|
 | intent-discovery | 1 | 必须 |
-| ai-doc-optimizer | 2（优化旧技能） | 优化旧技能必须 |
+| ai-doc-optimizer | 5 | 必须 |
 | test-first | 3 | 必须 |
 | skill-format | 3 | 必须 |
-| anti-rationalization | 3（有纪律强制标签） | 参考（策略融入 TDD） |
-| agents/grader.md | 4 步骤 2 | 必须 |
-| agents/comparator.md | 4 步骤 4 | 必须 |
-| agents/analyzer.md | 4 步骤 5 | 必须 |
-| scripts/aggregate_benchmark.py | 4 步骤 3 | 必须 |
-| ai-doc-optimizer | 5 | 必须 |
+| anti-rationalization | 3（有纪律强制标签） | 参考 |
+| agents/grader.md | 4 | 必须 |
+| scripts/aggregate_benchmark.py | 4 | 必须 |
+| agents/comparator.md | 4 | 必须 |
+| agents/analyzer.md | 4 | 必须 |
 | scripts/package_skill.py | 6 | 必须 |
 
 ---
 
 ## Anti-Patterns
 
-| 错误 | Red Flag | 反制 |
-|------|----------|------|
-| 跳过 intent-discovery | "需求很清楚，不需要澄清" | 模糊需求是技能失败的首因 |
-| 跳过 RED 阶段 | "这个技能很简单，不需要测试" | 跳过测试=无法证明技能有效 |
-| 自己写 SKILL.md，不调度 skill-format | "我知道格式，直接写" | 格式知识可能过时 |
-| 跳过 Blind Comparison | "测试通过了，肯定比基线好" | 测试通过≠优于基线 |
-| 跳过 ai-doc-optimizer | "文档已经很清晰了" | 优化是必须的收敛过程 |
-| TDD 失败后继续 | "再试一次可能就过了" | 必须 REFACTOR，不能重复失败 |
-| Blind Comparison 未达标继续 | "70% 太严格了" | 降低标准=降低质量 |
-| 自己执行任务 | "这个很快，我直接做" | meta-skill 不执行，只调度 |
-| 有纪律强制标签但未应用增强策略 | "压力场景不重要" | 有标签时 TDD 各阶段必须融入压力测试、说辞捕获、漏洞封堵 |
+| 错误 | Red Flag | 反制 | 典型说辞（不得合理化） |
+|------|----------|------|------------------------|
+| 跳过 intent-discovery | "需求很清楚" | 模糊需求是技能失败首因 | "我已经知道要做什么"；"这个很简单，直接开始" |
+| 跳过 RED 阶段 | "技能很简单，不需要测试" | 跳过测试=无法证明有效 | "写个测试太浪费时间"；"我确定这个能工作" |
+| 自己写 SKILL.md | "我知道格式，直接写" | 格式知识可能过时 | "格式我很熟"；"调度太慢了" |
+| 跳过 Blind Comparison | "测试通过了，肯定比基线好" | 测试通过≠优于基线 | "TDD 都过了，还比什么" |
+| 跳过 ai-doc-optimizer | "文档已经很清晰了" | 优化是必须的收敛过程 | "文档写得很好了" |
+| TDD 失败后继续 | "再试一次可能就过了" | 必须 REFACTOR，不能重复失败 | "可能是偶然失败" |
+| Blind Comparison 未达标继续 | "70% 太严格了" | 降低标准=降低质量 | "60% 也不错了" |
+| 自己执行任务 | "这个很快，我直接做" | meta-skill 不执行，只调度 | "调度太慢，我自己写" |
+| 有纪律强制标签但未应用增强 | "压力场景不重要" | 有标签时 TDD 必须融入压力测试、说辞捕获、漏洞封堵 | "压力测试没必要" |
 
 **核心原则**: 见 Overview + 硬性限制；各阶段技能/SubAgent/脚本均须调度，不可跳过。
 
@@ -338,7 +348,7 @@ python3 scripts/package_skill.py .
 |-----------|------|
 | 可修复 | 按错误信息修复后重试 |
 | 需重构 | 返回 REFACTOR |
-| 超过迭代上限 | 记录 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议下一步）→ 人工审查 |
+| 超过迭代上限 | 记录 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议）→ 人工审查 |
 | 用户拒绝回答 | 基于已有信息继续，标记假设到 boundaries |
 | 需求频繁变更 | 确定当前版本→继续→变更作为新迭代 |
 | 范围扩大 | 提醒边界→新需求放入 out_of_scope |
@@ -348,9 +358,5 @@ python3 scripts/package_skill.py .
 
 ## Verification
 
-```bash
-wc -w skills/meta-skill/SKILL.md
-ls skills/meta-skill/agents/ scripts/
-```
-
+`wc -w skills/meta-skill/SKILL.md`；`ls skills/meta-skill/agents/ scripts/`  
 **清单**: 意图澄清 ✓ / 类型判断 ✓ / TDD 通过 ✓ / Blind Comparison 通过 ✓ / 文档优化 ✓ / 打包 ✓
