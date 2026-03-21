@@ -93,6 +93,7 @@ def choose_delta_pair(configs: list[str]) -> tuple[str | None, str | None]:
     Pick primary/baseline in a semantically stable order.
     """
     pairs = [
+        ("primary", "baseline"),
         ("with_skill", "without_skill"),
         ("new_skill", "old_skill"),
         ("candidate", "baseline"),

@@ -362,7 +362,7 @@ python3 skills/meta-skill/scripts/package_skill.py skills/<skill-name> ./dist
 | 用户拒绝回答 | 停止执行；输出 assumptions + boundaries + 风险清单，待用户确认后继续 |
 | 需求频繁变更 | 确定当前版本→继续→变更作为新迭代 |
 | 范围扩大 | 提醒边界→新需求放入 out_of_scope |
-| 类型模糊 | 默认技术技能型→REFACTOR 调整 |
+| 类型模糊 | 停止并返回阶段 1 追问；未明确主类型+标签前不得进入阶段 3 |
 
 ---
 

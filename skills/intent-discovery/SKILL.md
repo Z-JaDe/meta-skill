@@ -38,6 +38,7 @@ flowchart TD
 | 类型 | 检索内容 |
 |------|----------|
 | skill-creation | 现有技能目录、模板、命名规范 |
+| skill-improvement | 现有技能内容、历史变更、已知问题与改进目标 |
 | feature-development | 项目结构、技术栈、现有类似模块 |
 | bug-fix | 错误日志、相关文件、修改历史 |
 | refactoring | 目标模块、依赖图、测试覆盖 |
@@ -55,7 +56,7 @@ flowchart TD
 **核心原理**: 人类一次只能处理有限信息（7±2，Miller 定律：短期记忆约 7 个组块）；由粗到细符合思维习惯；选择题降低决策成本。
 
 **提问前准备**（所有场景必须执行）:
-1. 读取参考文档：按 `requirement_type` 映射到同 workspace 内技能名（如 skill-creation→skill-format、documentation→ai-doc-optimizer；feature-development/bug-fix/refactoring→按当前项目类型选择对应文档）
+1. 读取参考文档：按 `requirement_type` 映射到同 workspace 内技能名（如 skill-creation/skill-improvement→skill-format，documentation→ai-doc-optimizer；feature-development/bug-fix/refactoring→按当前项目类型选择对应文档）
 2. 5W2H 分析（What/Why/Who/When/Where/How/How much 七问）:
    - What: 要做什么？（具体内容）
    - Why: 为什么做？（原因/目标）

@@ -95,6 +95,10 @@ description: Use when <trigger condition> due to <observable symptoms or constra
 3. 验证内容（见 内容标准）
 4. 输出修复建议或修复后的 SKILL.md
 
+**流程硬门禁**:
+- 步骤 2/3 任一未通过时，不得输出“已完成”结论
+- 必须明确标注未通过项及对应修复动作
+
 **格式规范**:
 
 | 步骤 | 要点 | 示例 |

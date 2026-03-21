@@ -21,7 +21,9 @@ description: Use when implementing any feature or bugfix before writing implemen
 | API 设计 | 调用示例/契约测试 | API 规范 |
 | 数据处理 | 质量检查/抽样验证 | ETL 脚本 |
 
-**不适用**: 一次性草稿、探索性原型（不作为可发布交付）
+**不适用**: 一次性草稿、探索性原型（且用户明确同意"不用于交付"）
+
+**适用硬门禁**: 只要目标是可交付产物（代码/文档/配置/API），无论简单与否都必须进入 TDD 循环
 
 **紧急热修复**: 允许最小 TDD（至少 1 个失败用例 + 1 次通过验证），但**不得跳过 RED**
 
