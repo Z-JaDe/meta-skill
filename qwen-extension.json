@@ -6,6 +6,9 @@
     "name": "zjade",
     "email": "zjade@outlook.com"
   },
+  "homepage": "https://github.com/Z-JaDe/meta-skill",
+  "repository": "https://github.com/Z-JaDe/meta-skill",
+  "license": "MIT",
   "contextFileName": "MetaSkillContext.md",
   "keywords": ["skill-creator", "meta-skill", "self-evolving", "tdd", "intent-discovery", "anti-rationalization", "skill-format", "ai-doc-optimizer"]
 }

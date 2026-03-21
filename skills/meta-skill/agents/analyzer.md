@@ -214,7 +214,7 @@ You receive these parameters in your prompt:
 ### Step 1: Read Benchmark Data
 
 1. Read the benchmark.json containing all run results
-2. Note the configurations tested (with_skill, without_skill)
+2. Note the configurations tested (typically primary vs baseline)
 3. Understand the run_summary aggregates already calculated
 
 ### Step 2: Analyze Per-Assertion Patterns
@@ -222,8 +222,8 @@ You receive these parameters in your prompt:
 For each expectation across all runs:
 - Does it **always pass** in both configurations? (may not differentiate skill value)
 - Does it **always fail** in both configurations? (may be broken or beyond capability)
-- Does it **always pass with skill but fail without**? (skill clearly adds value here)
-- Does it **always fail with skill but pass without**? (skill may be hurting)
+- Does it **always pass in primary but fail in baseline**? (primary clearly adds value here)
+- Does it **always fail in primary but pass in baseline**? (primary may be hurting)
 - Is it **highly variable**? (flaky expectation or non-deterministic behavior)
 
 ### Step 3: Analyze Cross-Eval Patterns

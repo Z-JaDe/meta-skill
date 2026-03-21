@@ -9,8 +9,9 @@
 
 | 字段 | 类型 | 用途 |
 |------|------|------|
-| `winner` | string | "A" 或 "B" |
-| `winner_is_with_skill` | boolean | true 表示赢家是带技能配置 |
+| `winner` | string | "A" 或 "B"（禁止 TIE） |
+| `winner_role` | string | `"primary"` 或 `"baseline"` |
+| `winner_is_primary` | boolean | true 表示赢家属于 primary 角色 |
 | `reasoning` | string | 选择理由 |
 
 ---
@@ -20,7 +21,8 @@
 ```json
 {
   "winner": "A",
-  "winner_is_with_skill": true,
+  "winner_role": "primary",
+  "winner_is_primary": true,
   "reasoning": "Output A provides a complete solution with proper formatting and all required fields.",
   "rubric": {
     "A": {

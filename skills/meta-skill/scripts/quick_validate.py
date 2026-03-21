@@ -4,7 +4,6 @@ Quick validation script for skills
 """
 
 import sys
-import os
 import re
 import yaml
 from pathlib import Path
@@ -42,24 +41,24 @@ def check_mermaid(content):
     return True, ""
 
 def check_lists_and_tables(content):
-    """Check if 3+ items use list/table format"""
-    # Look for paragraphs with 3+ items in a row
-    lines = content.split('\n')
-    for i, line in enumerate(lines):
-        # Check for numbered or bulleted lists
-        if re.match(r'^\s*[-*+]\s+', line):
-            # Count consecutive list items
-            count = 1
-            for j in range(i+1, min(i+10, len(lines))):
-                if re.match(r'^\s*[-*+]\s+', lines[j]):
-                    count += 1
-                else:
-                    break
-            if count >= 3:
-                return True, ""  # Has proper list
-    return True, ""  # No 3+ items found, OK
+    """
+    Heuristic check for plain-text 3+ item enumerations.
 
-def validate_skill(skill_path):
+    We only flag obvious inline enumerations in non-list, non-table lines.
+    """
+    for line in content.split('\n'):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(('#', '-', '*', '|', '```')):
+            continue
+        # Only flag obvious one-line numeric enumerations like
+        # "1) ... 2) ... 3) ..." that should be broken into list/table.
+        if re.search(r'1[.)、].*2[.)、].*3[.)、]', stripped):
+            return False, "检测到疑似 3+ 项并列文本，请改为列表或表格"
+    return True, ""
+
+def validate_skill(skill_path, strict=False):
     """Validation of a skill"""
     skill_path = Path(skill_path)
 
@@ -69,7 +68,9 @@ def validate_skill(skill_path):
         return False, "SKILL.md not found"
 
     # Read and validate frontmatter
-    content = skill_md.read_text()
+    content = skill_md.read_text(encoding="utf-8")
+    # Normalize for cross-platform line endings and UTF-8 BOM.
+    content = content.lstrip('\ufeff').replace('\r\n', '\n')
     if not content.startswith('---'):
         return False, "No YAML frontmatter found"
 
@@ -110,15 +111,16 @@ def validate_skill(skill_path):
     if not isinstance(name, str):
         return False, f"Name must be a string, got {type(name).__name__}"
     name = name.strip()
-    if name:
-        # Check naming convention (kebab-case: lowercase with hyphens)
-        if not re.match(r'^[a-z0-9-]+$', name):
-            return False, f"Name '{name}' should be kebab-case (lowercase letters, digits, and hyphens only)"
-        if name.startswith('-') or name.endswith('-') or '--' in name:
-            return False, f"Name '{name}' cannot start/end with hyphen or contain consecutive hyphens"
-        # Check name length (max 64 characters per spec)
-        if len(name) > 64:
-            return False, f"Name is too long ({len(name)} characters). Maximum is 64 characters."
+    if not name:
+        return False, "Name cannot be empty or whitespace-only"
+    # Check naming convention (kebab-case: lowercase with hyphens)
+    if not re.match(r'^[a-z0-9-]+$', name):
+        return False, f"Name '{name}' should be kebab-case (lowercase letters, digits, and hyphens only)"
+    if name.startswith('-') or name.endswith('-') or '--' in name:
+        return False, f"Name '{name}' cannot start/end with hyphen or contain consecutive hyphens"
+    # Check name length (max 64 characters per spec)
+    if len(name) > 64:
+        return False, f"Name is too long ({len(name)} characters). Maximum is 64 characters."
 
     # Extract and validate description
     description = frontmatter.get('description', '')
@@ -151,19 +153,30 @@ def validate_skill(skill_path):
     # Line count check - ≥250 lines warning
     has_warning, msg = check_progressive_disclosure(content, line_count)
     if has_warning:
+        if strict:
+            return False, msg
         print(f"WARNING: {msg}")
 
     valid, msg = check_mermaid(content)
     if not valid:
         return False, msg
 
+    valid, msg = check_lists_and_tables(content)
+    if not valid:
+        return False, msg
+
     return True, "Skill is valid!"
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python quick_validate.py <skill_directory>")
+    if len(sys.argv) not in {2, 3}:
+        print("Usage: python quick_validate.py <skill_directory> [--strict]")
         sys.exit(1)
-    
-    valid, message = validate_skill(sys.argv[1])
+
+    strict_mode = len(sys.argv) == 3 and sys.argv[2] == "--strict"
+    if len(sys.argv) == 3 and not strict_mode:
+        print("Unknown option. Supported option: --strict")
+        sys.exit(1)
+
+    valid, message = validate_skill(sys.argv[1], strict=strict_mode)
     print(message)
     sys.exit(0 if valid else 1)

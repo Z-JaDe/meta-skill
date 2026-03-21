@@ -1,6 +1,6 @@
 ---
 name: anti-rationalization
-description: Use when designing discipline-enforcing rules, pressure testing rule robustness, or plugging rationalization loopholes. ALWAYS design pressure scenarios, capture rationalizations, reinforce, plug, and re-test until bulletproof
+description: Use when designing discipline-enforcing rules, pressure testing rule robustness, or plugging rationalization loopholes in high-pressure scenarios.
 ---
 
 # Anti-Rationalization
@@ -11,7 +11,7 @@ description: Use when designing discipline-enforcing rules, pressure testing rul
 
 **适用**: 纪律强制型技能（如 `test-first`、`verification-before-completion`）
 
-**不适用**: 技术技能型、参考型、自愿遵守且无跳过动机的流程
+**不适用**: 无强制规则、无合规成本、无跳过动机的流程
 
 ---
 

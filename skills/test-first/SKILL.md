@@ -21,7 +21,9 @@ description: Use when implementing any feature or bugfix before writing implemen
 | API 设计 | 调用示例/契约测试 | API 规范 |
 | 数据处理 | 质量检查/抽样验证 | ETL 脚本 |
 
-**不适用**: 一次性草稿、探索性原型、紧急热修复（需事后补验证）
+**不适用**: 一次性草稿、探索性原型（不作为可发布交付）
+
+**紧急热修复**: 允许最小 TDD（至少 1 个失败用例 + 1 次通过验证），但**不得跳过 RED**
 
 ---
 
@@ -124,6 +126,7 @@ flowchart TD
 | 🚩 "这次特殊情况" | - | 没有例外 |
 | 🚩 "我手动测过了" | - | 手动检查不可复现 |
 | 🚩 "REFACTOR 完就结束了" | - | REFACTOR 后回到 RED 继续下一个测试 |
+| 🚩 "SubAgent 挂了，我自己直接改" | - | 先修复执行链路或记录阻塞，不得绕过测试 |
 
 **处理方式**: 出现上述说辞 → 暂停 → 重申铁律 → 回到 RED → 记录并调度 `anti-rationalization`
 

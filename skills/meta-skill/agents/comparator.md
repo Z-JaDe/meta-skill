@@ -16,10 +16,10 @@ You receive these parameters in your prompt:
 - **output_b_path**: Path to the second output file or directory
 - **eval_prompt**: The original task/prompt that was executed
 - **expectations**: List of expectations to check (optional - may be empty)
-- **config_a_is_with_skill**: Boolean - true if output A is from the "with_skill" configuration
-- **config_b_is_with_skill**: Boolean - true if output B is from the "with_skill" configuration
+- **config_a_role**: String - role of output A, must be `"primary"` or `"baseline"`
+- **config_b_role**: String - role of output B, must be `"primary"` or `"baseline"`
 
-**Important**: You do NOT know which config (A or B) corresponds to "with_skill". Judge purely on output quality. The `config_a_is_with_skill` and `config_b_is_with_skill` are provided only for output formatting, not for judgment.
+**Important**: You do NOT know which output is better in advance. Judge purely on output quality. The role mapping (`config_a_role` / `config_b_role`) is provided only for output formatting, not for judgment.
 
 ## Process
 
@@ -81,19 +81,22 @@ Compare A and B based on (in priority order):
 
 1. **Primary**: Overall rubric score (content + structure)
 2. **Secondary**: Assertion pass rates (if applicable)
-3. **Tiebreaker**: If truly equal, declare a TIE
+3. **Tiebreaker**: If scores are very close, choose the one with better correctness/completeness evidence
 
-Be decisive - ties should be rare. One output is usually better, even if marginally.
+Be decisive - do not output TIE. Choose A or B even if margin is small.
 
 ### Step 7: Write Comparison Results
 
 Save results to a JSON file.
 
-**Determine `winner_is_with_skill`**:
-- If `winner` is "A": `winner_is_with_skill = config_a_is_with_skill`
-- If `winner` is "B": `winner_is_with_skill = config_b_is_with_skill`
+**Determine role fields**:
+- If `winner` is "A": `winner_role = config_a_role`
+- If `winner` is "B": `winner_role = config_b_role`
+- `winner_is_primary = (winner_role == "primary")`
 
-This field allows the meta-skill to calculate the comparator selection rate without knowing which output was which.
+These fields allow meta-skill to calculate comparator selection rate in both scenarios:
+- new skill creation (`primary`=candidate, `baseline`=no-skill baseline)
+- existing skill optimization (`primary`=new-skill, `baseline`=old-skill)
 
 ## Output Format
 
@@ -102,7 +105,8 @@ Write a JSON file with this structure:
 ```json
 {
   "winner": "A",
-  "winner_is_with_skill": true,
+  "winner_role": "primary",
+  "winner_is_primary": true,
   "reasoning": "Output A provides a complete solution with proper formatting and all required fields. Output B is missing the date field and has formatting inconsistencies.",
   "rubric": {
     "A": {

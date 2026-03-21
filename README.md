@@ -47,23 +47,23 @@ The `skills/` directory contains the built-in skill library that meta-skill call
 ## Core Flow
 
 ```
-Intent Discovery → TDD-Driven (RED-GREEN-REFACTOR + Anti-Rationalization) → Blind Comparison → AI Retrieval Optimization → Package & Deploy
+Intent Discovery → Type Decision → TDD Loop → Blind Comparison → AI Retrieval Optimization → Package
 ```
 
-| Stage | Skill | Description |
-|-------|-------|-------------|
-| **Intent Discovery** | `intent-discovery` | Progressive questioning to clarify vague requirements, output `output_dir` and skill type |
-| **TDD-Driven** | `test-first` + `anti-rationalization` | **RED**: Design pressure scenarios + capture rationalizations → **GREEN**: Reinforce with persuasion principles + plug loopholes → **REFACTOR**: Re-test until no new rationalizations |
-| **Blind Comparison** | `agents/{grader,comparator,analyzer}` | Blind evaluation: candidate vs baseline, verify significantly better than baseline (selection rate>70% AND pass rate improvement>20%) |
-| **AI Retrieval Optimization** | `ai-doc-optimizer` | Iterative optimization until convergence (2 consecutive rounds of semantic equivalence or max_iterations=5) |
-| **Package & Deploy** | `scripts/package_skill.py` | Generate `.skill` file, validate: <500 lines, Mermaid diagrams, kebab-case naming |
+This README only keeps a lightweight flow view.
 
-**Anti-Rationalization Integrated into TDD**:
-| TDD Stage | Anti-Rationalization Strategy |
-|-----------|-------------------------------|
-| **RED** | Design ≥3 overlapping pressure scenarios, adversarial testing to capture rationalizations (verbatim recording) |
-| **GREEN** | Reinforce with persuasion principles (authority + commitment + social proof), plug loopholes (No exceptions + prohibit each workaround) |
-| **REFACTOR** | Re-test validation, discover new rationalizations → continue reinforcing until none remain |
+**Single source of truth for the authoritative stage contract and gating rules:**
+
+- `skills/meta-skill/SKILL.md`
+
+| Stage (Lite View) | Main Components |
+|-------------------|-----------------|
+| Intent Discovery | `intent-discovery` |
+| Type Decision | `meta-skill` stage-2 judgment (main type + enforcement tag) |
+| TDD Loop | `test-first` + `skill-format` (+ `anti-rationalization` when enforcement tag is present) |
+| Blind Comparison | `agents/{grader,comparator,analyzer}` + `scripts/aggregate_benchmark.py` |
+| AI Retrieval Optimization | `ai-doc-optimizer` |
+| Package | `scripts/package_skill.py` |
 
 ---
 
@@ -148,9 +148,9 @@ These skills work together to create new skills:
 When you ask meta-skill to create a new skill:
 
 ```
-User Request → intent-discovery (clarify) → test-first (write tests) 
-           → anti-rationalization (pressure-test) → ai-doc-optimizer (refine)
-           → skill-format (validate) → .skill file
+User Request → intent-discovery → type decision
+           → test-first + skill-format (+ anti-rationalization when needed)
+           → blind comparison → ai-doc-optimizer → package
 ```
 
 Each sub-skill handles a specific aspect of the creation process, ensuring the final skill is:
@@ -247,9 +247,21 @@ In Cursor Agent chat, install from marketplace:
 
 ---
 
+## Contributing
+
+Please follow `CONTRIBUTING.md` for:
+
+- minimal newcomer path,
+- required `quick_validate.py` before contribution,
+- `.test/` artifact policy,
+- plugin metadata release sync checklist,
+- `check_plugin_metadata.py` automated consistency check.
+
+---
+
 ## License
 
-MIT
+MIT (see `LICENSE`)
 
 ---
 

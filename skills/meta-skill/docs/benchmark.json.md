@@ -9,8 +9,8 @@
 
 | 字段 | 类型 | 用途 |
 |------|------|------|
-| `run_summary.with_skill.pass_rate.mean` | float | 带技能配置的平均通过率 |
-| `run_summary.without_skill.pass_rate.mean` | float | 不带技能配置的平均通过率 |
+| `run_summary.<primary>.pass_rate.mean` | float | primary 配置的平均通过率 |
+| `run_summary.<baseline>.pass_rate.mean` | float | baseline 配置的平均通过率 |
 | `run_summary.delta.pass_rate` | string | 通过率差异（如 "+0.25"） |
 
 ---
@@ -26,12 +26,14 @@
     "analyzer_model": "model-name",
     "timestamp": "2026-03-09T12:00:00Z",
     "evals_run": [1, 2, 3],
-    "runs_per_configuration": 3
+    "runs_per_configuration": 3,
+    "expected_runs_per_configuration": 3,
+    "layout": "workspace"
   },
   "runs": [
     {
       "eval_id": 1,
-      "configuration": "with_skill",
+      "configuration": "primary",
       "run_number": 1,
       "result": {
         "pass_rate": 0.80,
@@ -48,7 +50,7 @@
     }
   ],
   "run_summary": {
-    "with_skill": {
+    "primary": {
       "pass_rate": {
         "mean": 0.85,
         "stddev": 0.05,
@@ -68,14 +70,16 @@
         "max": 13000
       }
     },
-    "without_skill": {
+    "baseline": {
       "pass_rate": {"mean": 0.60, "stddev": 0.10, "min": 0.50, "max": 0.70},
       "time_seconds": {"mean": 32.7, "stddev": 3.2, "min": 30.0, "max": 36.0},
       "tokens": {"mean": 10000, "stddev": 800, "min": 9200, "max": 10800}
     },
     "delta": {
+      "primary": "primary",
+      "baseline": "baseline",
       "pass_rate": "+0.25",
-      "time_seconds": "+12.5s",
+      "time_seconds": "+12.5",
       "tokens": "+2000"
     }
   },

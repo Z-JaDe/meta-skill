@@ -47,23 +47,34 @@ meta-skill 将自动：
 ## 核心流程
 
 ```
-意图发现 → TDD 驱动 (RED-GREEN-REFACTOR + Anti-Rationalization) → 双盲检测 → AI 检索优化 → 打包部署
+意图发现 → 类型判断 → TDD 循环 → 双盲检测 → AI 检索优化 → 打包
 ```
 
-| 阶段 | 技能 | 说明 |
-|------|------|------|
-| **意图发现** | `intent-discovery` | 渐进式提问澄清模糊需求，输出 `output_dir` 和技能类型 |
-| **TDD 驱动** | `test-first` + `anti-rationalization` | **RED**: 设计压力场景 + 捕获说辞 → **GREEN**: 说服原则加固 + 漏洞封堵 → **REFACTOR**: 重测验证直到无新说辞 |
-| **双盲检测** | `agents/{grader,comparator,analyzer}` | 盲评 candidate vs baseline，验证显著优于基线（选择率>70% AND 通过率提升>20%） |
-| **AI 检索优化** | `ai-doc-optimizer` | 迭代优化直到收敛（连续 2 轮语义等价或 max_iterations=5） |
-| **打包部署** | `scripts/package_skill.py` | 生成 `.skill` 文件，验证：行数<500、Mermaid 流程图、kebab-case 命名 |
+README 仅保留轻量流程视图。
 
-**Anti-Rationalization 融入 TDD**:
-| TDD 阶段 | Anti-Rationalization 策略 |
-|---------|--------------------------|
-| **RED** | 设计≥3 种压力叠加场景，对抗测试捕获说辞（逐字记录） |
-| **GREEN** | 用说服原则加固（权威 + 承诺 + 社会证明），封堵漏洞（No exceptions + 逐一禁止） |
-| **REFACTOR** | 重测验证，发现新说辞→继续加固，直到无新说辞 |
+**唯一权威流程与硬门禁定义：**
+
+- `skills/meta-skill/SKILL.md`
+
+| 阶段（简版） | 主要组件 |
+|--------------|----------|
+| 意图发现 | `intent-discovery` |
+| 类型判断 | `meta-skill` 阶段 2 判断（主类型 + 纪律强制标签） |
+| TDD 循环 | `test-first` + `skill-format`（有纪律强制标签时再叠加 `anti-rationalization`） |
+| 双盲检测 | `agents/{grader,comparator,analyzer}` + `scripts/aggregate_benchmark.py` |
+| AI 检索优化 | `ai-doc-optimizer` |
+| 打包 | `scripts/package_skill.py` |
+
+### 术语中英文固定映射
+
+| 中文 | English |
+|------|---------|
+| 意图发现 | Intent Discovery |
+| 类型判断 | Type Decision |
+| 双盲检测 | Blind Comparison |
+| 反模式压力测试 | Anti-Rationalization Pressure Testing |
+| 说辞 | Rationalization |
+| 渐进式披露 | Progressive Disclosure |
 
 ---
 
@@ -148,9 +159,9 @@ flowchart TB
 当你让 meta-skill 创建新技能时：
 
 ```
-用户请求 → intent-discovery (澄清) → test-first (写测试)
-           → anti-rationalization (压力测试) → ai-doc-optimizer (优化)
-           → skill-format (验证) → .skill 文件
+用户请求 → intent-discovery → 类型判断
+           → test-first + skill-format（按需叠加 anti-rationalization）
+           → 双盲检测 → ai-doc-optimizer → 打包
 ```
 
 每个子技能处理创建过程的特定方面，确保最终技能：
@@ -210,7 +221,7 @@ meta-skill/
 
 ## 扩展支持
 
-本项目同时支持 **Claude Code Plugin** 和 **Qwen Code Extension**。
+本项目同时支持 **Claude Code Plugin**、**Qwen Code Extension** 和 **Cursor Plugin**。
 
 ### 安装方式
 
@@ -247,9 +258,21 @@ qwen extensions link /path/to/meta-skill
 
 ---
 
+## 贡献指南
+
+请按 `CONTRIBUTING.md` 执行贡献动作，包含：
+
+- 新人最小路径，
+- 修改后必须执行 `quick_validate.py`，
+- `.test/` 产物策略，
+- 插件元数据发布同步清单，
+- `check_plugin_metadata.py` 自动一致性检查。
+
+---
+
 ## 许可证
 
-MIT
+MIT（见 `LICENSE`）
 
 ---
 

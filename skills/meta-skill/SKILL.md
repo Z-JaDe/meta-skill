@@ -1,6 +1,6 @@
 ---
 name: meta-skill
-description: Use when creating new skills from scratch or improving existing skills. Orchestrates intent-discovery → TDD → blind comparison → optimization.
+description: Use when creating a new skill or improving an existing skill where end-to-end quality gates must be enforced.
 ---
 
 # Meta Skill
@@ -135,17 +135,17 @@ flowchart TD
 
 | 传递项 | 值 |
 |--------|-----|
-| requirement_type | "skill-creation"（固定） |
-| context | `{"language": "zh-CN \| en-US", "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx"}` |
+| requirement_type | `"skill-creation"`（创建）或 `"skill-improvement"`（优化） |
+| context | `{"language": "zh-CN \| en-US", "output_dir": "~/.qwen/skills/xxx 或 ./skills/xxx", "existing_skill_path": "优化场景必填"}` |
 
 **intent-discovery 输出**（JSON 结构）:
-- `requirement_type`: "skill-creation"
+- `requirement_type`: "skill-creation | skill-improvement"
 - `requirements`: {what, when, output, test}
 - `boundaries`: {in_scope, out_of_scope}
-- `context`: {skill_name, description, language, output_dir}
+- `context`: {skill_name, description, language, output_dir, existing_skill_path(优化场景)}
 - `next_steps`: []
 
-**meta-skill 提取**: skill_name、description、language、output_dir 从 context；skill_type 在阶段 2 判断
+**meta-skill 提取**: skill_name、description、language、output_dir、existing_skill_path（优化场景）从 context；skill_type 在阶段 2 判断
 
 ### 阶段 2: 技能类型判断
 
@@ -261,7 +261,13 @@ flowchart TD
 | 5 analyzer→improvement_suggestions | SubAgent |
 | 6 判断显著优于基线 | 无 |
 
-**路径**: 见 Output Path Contract。**指标**: 选择率=comparator 选 candidate 比例；通过率=grader 断言通过比例。**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）。
+**comparator 输入契约**:
+- 必传：`config_a_role`、`config_b_role`，取值只能是 `primary` 或 `baseline`
+- 创建场景：`primary`=candidate，`baseline`=无技能基线
+- 优化场景：`primary`=new-skill，`baseline`=old-skill
+- `comparator` 必须输出 `winner_role` 与 `winner_is_primary`，禁止输出 TIE
+
+**路径**: 见 Output Path Contract。**指标**: 选择率=comparator 选 `primary` 比例；通过率=grader 断言通过比例。**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）。
 
 ### 阶段 5: 文档优化
 
@@ -276,12 +282,13 @@ flowchart TD
 ### 阶段 6: 打包部署
 
 ```bash
-python3 scripts/package_skill.py .
+# 在仓库根目录执行
+python3 skills/meta-skill/scripts/package_skill.py skills/<skill-name> ./dist
 ```
 
 **输出**: `.skill` 文件
 
-**验证规则**（scripts/quick_validate.py 执行）:
+**验证规则**（`skills/meta-skill/scripts/quick_validate.py` 执行）:
 | 规则 | 要求 |
 |------|------|
 | 命名 | kebab-case |
@@ -350,7 +357,7 @@ python3 scripts/package_skill.py .
 | 可修复 | 按错误信息修复后重试 |
 | 需重构 | 返回 REFACTOR |
 | 超过迭代上限 | 记录 `.test/iteration-N/failure.md`（失败阶段、错误信息、已尝试修复、建议）→ 人工审查 |
-| 用户拒绝回答 | 基于已有信息继续，标记假设到 boundaries |
+| 用户拒绝回答 | 停止执行；输出 assumptions + boundaries + 风险清单，待用户确认后继续 |
 | 需求频繁变更 | 确定当前版本→继续→变更作为新迭代 |
 | 范围扩大 | 提醒边界→新需求放入 out_of_scope |
 | 类型模糊 | 默认技术技能型→REFACTOR 调整 |

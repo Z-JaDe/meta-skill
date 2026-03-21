@@ -11,7 +11,7 @@ SKILL 为 AI Agent 执行而写，非为人脑理解。
 
 **核心目标**: 确保技能可被发现、正确触发、严格执行
 
-**CRITICAL**: Description 总结工作流程 → AI 只看描述不读全文
+**CRITICAL**: Description 是触发路由，不是执行说明。若写成流程总结，会导致误触发或错路由。
 
 **适用**: 格式化/验证 SKILL.md、修复触发问题
 
@@ -29,6 +29,20 @@ description: Use for TDD - write test first, watch it fail, write minimal code, 
 
 # ✅ GOOD: 仅触发条件
 description: Use when implementing any feature or bugfix, before writing implementation code
+```
+
+### Description 优化三步
+
+| 步骤 | 目标 | 检查标准 |
+|------|------|----------|
+| 1. 触发条件 | 说清何时调用 | 以 `Use when...` 开头，包含场景/症状 |
+| 2. 边界限定 | 避免误触发 | 明确不属于本技能的相邻场景（用 `due to`/`with` 收束） |
+| 3. 去流程化 | 避免偷塞实现步骤 | 不出现阶段顺序、实现动作链、长流程描述 |
+
+**推荐模板**:
+
+```yaml
+description: Use when <trigger condition> due to <observable symptoms or constraints>.
 ```
 
 ### 命名规范
@@ -85,7 +99,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 | 步骤 | 要点 | 示例 |
 |------|------|------|
 | 命名 | 动名词开头 | ✅ `creating-skills` ❌ `skill-creation` |
-| Description | 仅触发条件，不总结工作流 | ✅ `Use when implementing` ❌ `Use for TDD...` |
+| Description | 仅触发条件 + 边界，不总结工作流 | ✅ `Use when implementing` ❌ `Use for TDD...` |
 | 关键词 | 错误/症状/同义词 | `skill not loading`, `wrong triggers` |
 | 跨引用 | 技能名 + `**REQUIRED:**` | `**REQUIRED:** Use test-first` |
 
@@ -105,6 +119,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 | 错误 | 修复 | 典型说辞（不得合理化） |
 |------|------|------------------------|
 | Description 总结流程 | 仅保留触发条件 | "描述流程更清楚"；"用户更容易理解" |
+| Description 塞入硬约束口号（如 ALWAYS / NO EXCEPTIONS） | 将硬约束移入正文 Overview/Anti-Patterns | "放在 description 更醒目"；"这样不会忘记" |
 | Description 使用冒号分隔 trigger keywords | 用 when/due to/with 自然融入 | "这样更简洁"；"冒号更清晰" |
 | 第一人称 | 改用第三人称 | "第一人称更亲切"；"这样写更自然" |
 | 抽象命名 | 使用具体动词/症状 | "抽象命名更通用"；"这样更专业" |
@@ -118,11 +133,12 @@ description: Use when implementing any feature or bugfix, before writing impleme
 ```bash
 wc -w skills/<path>/SKILL.md   # <path>=占位符；字数
 head -5 skills/<path>/SKILL.md # Frontmatter
-ls skills/ | grep -E '^[a-z0-9-]+$'  # 命名
+ls skills/
+rg "^name: [a-z0-9-]+$" skills --glob "*/SKILL.md"  # frontmatter 命名抽检
 ```
 
 **部署检查清单**:
 - [ ] 命名：仅字母 + 连字符
-- [ ] Frontmatter：仅 name + description
-- [ ] Description：以 "Use when..." 开头，无流程总结
+- [ ] Frontmatter：至少 name + description（可选：license / allowed-tools / metadata / compatibility）
+- [ ] Description：以 "Use when..." 开头，包含触发条件/边界，无流程总结
 - [ ] 跨引用：使用技能名，无 @ 路径

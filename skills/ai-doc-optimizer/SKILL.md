@@ -1,6 +1,6 @@
 ---
 name: ai-doc-optimizer
-description: Use when optimizing documents for AI reading efficiency due to excessive word count, ambiguous language, poor structure, or information scattering. ALWAYS iterate until convergence or max iterations
+description: Use when optimizing documents for AI reading efficiency due to excessive word count, ambiguous language, poor structure, or information scattering.
 ---
 
 # AI Doc Optimizer

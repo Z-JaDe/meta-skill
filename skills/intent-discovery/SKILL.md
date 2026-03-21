@@ -1,6 +1,6 @@
 ---
 name: intent-discovery
-description: Use when user request is vague, requirements are unclear, boundaries undefined, or success criteria missing. ALWAYS clarify before execution
+description: Use when user request is vague, requirements are unclear, boundaries undefined, or success criteria are missing and clarification is required before execution.
 ---
 
 # Intent Discovery
@@ -113,7 +113,7 @@ flowchart TD
 
 ```json
 {
-  "requirement_type": "skill-creation | feature-development | bug-fix | refactoring | documentation",
+  "requirement_type": "skill-creation | skill-improvement | feature-development | bug-fix | refactoring | documentation",
   "requirements": {
     "what": "要做什么",
     "when": "触发场景",
@@ -134,7 +134,8 @@ flowchart TD
 **`context` 字段**（按 `requirement_type` 从下表选择填充）:
 | 类型 | 示例字段 |
 |------|----------|
-| skill-creation | `skill_name`, `language`, `output_dir` |
+| skill-creation | `skill_name`, `description`, `language`, `output_dir` |
+| skill-improvement | `existing_skill_path`, `description`, `improvement_goal`, `preserve_behavior` |
 | feature-development | `tech_stack`, `target_module` |
 | bug-fix | `affected_files`, `repro_steps` |
 | refactoring | `scope`, `preserve_behavior` |
