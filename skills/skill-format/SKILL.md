@@ -38,6 +38,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 | 1. 触发条件 | 说清何时调用 | 以 `Use when...` 开头，包含场景/症状 |
 | 2. 边界限定 | 避免误触发 | 明确不属于本技能的相邻场景（用 `due to`/`with` 收束） |
 | 3. 去流程化 | 避免偷塞实现步骤 | 不出现阶段顺序、实现动作链、长流程描述 |
+| 4. 可检索性 | 降低漏触发 | 建议 1 句完成，长度 15-220 字符，包含至少 1 个可观察症状关键词 |
 
 **推荐模板**:
 
@@ -120,6 +121,7 @@ description: Use when <trigger condition> due to <observable symptoms or constra
 |------|------|------------------------|
 | Description 总结流程 | 仅保留触发条件 | "描述流程更清楚"；"用户更容易理解" |
 | Description 塞入硬约束口号（如 ALWAYS / NO EXCEPTIONS） | 将硬约束移入正文 Overview/Anti-Patterns | "放在 description 更醒目"；"这样不会忘记" |
+| Description 过短/过长导致误触发 | 控制在单句 15-220 字符并包含症状关键词 | "越短越好"；"写长一点更保险" |
 | Description 使用冒号分隔 trigger keywords | 用 when/due to/with 自然融入 | "这样更简洁"；"冒号更清晰" |
 | 第一人称 | 改用第三人称 | "第一人称更亲切"；"这样写更自然" |
 | 抽象命名 | 使用具体动词/症状 | "抽象命名更通用"；"这样更专业" |
@@ -141,4 +143,5 @@ rg "^name: [a-z0-9-]+$" skills --glob "*/SKILL.md"  # frontmatter 命名抽检
 - [ ] 命名：仅字母 + 连字符
 - [ ] Frontmatter：至少 name + description（可选：license / allowed-tools / metadata / compatibility）
 - [ ] Description：以 "Use when..." 开头，包含触发条件/边界，无流程总结
+- [ ] Description：单句（建议）且 15-220 字符，包含至少 1 个可观察症状关键词
 - [ ] 跨引用：使用技能名，无 @ 路径

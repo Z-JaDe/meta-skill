@@ -266,6 +266,7 @@ flowchart TD
 - 创建场景：`primary`=candidate，`baseline`=无技能基线
 - 优化场景：`primary`=new-skill，`baseline`=old-skill
 - `comparator` 必须输出 `winner_role` 与 `winner_is_primary`，禁止输出 TIE
+- `aggregate_benchmark.py` 默认校验每个 eval 每个配置运行 3 次（`--expected-runs-per-config`）
 
 **路径**: 见 Output Path Contract。**指标**: 选择率=comparator 选 `primary` 比例；通过率=grader 断言通过比例。**失败**: 未通过→返回 REFACTOR（用 improvement_suggestions）。
 
@@ -311,6 +312,7 @@ python3 skills/meta-skill/scripts/package_skill.py skills/<skill-name> ./dist
 | 7 | 产出是否位于 `.test/iteration-N/`？ | 3-4 |
 | 8 | 是否通过 ai-doc-optimizer 优化最终文档？ | 5 |
 | 9 | 是否通过 package_skill.py 打包？ | 6 |
+| 10 | 盲比较样本数是否满足每 eval 每配置 3 次（或显式声明例外）？ | 4 |
 
 ---
 

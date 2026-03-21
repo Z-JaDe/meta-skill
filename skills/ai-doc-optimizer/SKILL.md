@@ -57,8 +57,10 @@ flowchart TD
 |------|------|
 | iteration_count | 当前迭代次数，初始 0 |
 | max_iterations | 最大迭代次数，默认 5 |
-| last_valid | 上一轮语义完整的版本；仅在步骤 5 判定"语义完整但未收敛"时更新 |
+| semantic_anchor | 语义锚点（输入原文的稳定语义基准，迭代中不可替换） |
+| last_valid | 当前最新语义完整版本，初始值为输入原文 |
 | convergence_streak | 连续收敛计数，初始 0；满足收敛标准时 +1；未满足时置 0 |
+| unresolved_issues | 达上限时仍未解决的问题列表 |
 
 ---
 
@@ -161,16 +163,16 @@ flowchart TD
 **收敛标准**（同时满足）:
 | 检查项 | 标准 |
 |--------|------|
-| 语义等价 | 与 last_valid 100% 等价 |
+| 语义等价 | 与 `semantic_anchor` 100% 等价 |
 | 结构稳定 | 章节/列表/表格无变化 |
 | 表述一致 | 关键术语/定义无变化 |
 | 无新增修复 | 本轮未新增歧义澄清或冗余移除 |
 
 **判定逻辑**:
-1. 语义不等价 → 达上限：输出 last_valid + 警告；否则：基于 last_valid 重新迭代
-2. 满足收敛 → `convergence_streak+1`；≥2 → 收敛输出
-3. 未满足 → `convergence_streak=0`，更新 `last_valid`
-4. 达上限 → 输出 last_valid + 未解决问题列表
+1. 语义不等价（相对 `semantic_anchor`）→ 回滚到 `last_valid`；达上限则输出 `last_valid + 警告`
+2. 语义等价且满足收敛标准 → `convergence_streak+1`；`convergence_streak>=2` 才输出收敛版本
+3. 语义等价但未收敛 → `convergence_streak=0`，更新 `last_valid` 并进入下一轮
+4. 达上限仍未收敛 → 输出 `last_valid + unresolved_issues`
 
 **质检项**（部署时逐项勾选）:
 - 定位锁定：定位/原则 未更改
@@ -198,6 +200,7 @@ flowchart TD
 | 未检查章节重复 | "语句不重复就行" | 检查章节/表格/流程图重复 |
 | 保留低频内容 | "AI 可能用得上" | 删除或移至附录 |
 | 过度详细示例 | "示例越多越好" | 精简示例，保留核心 |
+| 用最新版本替换语义锚点 | "每轮基准都更新更灵活" | `semantic_anchor` 固定为输入原文，不可替换 |
 
 **Red Flags**（停止并重新开始）:
 | 情况 | 处理 |
@@ -212,5 +215,5 @@ flowchart TD
 
 ```bash
 wc -w skills/<skill-name>/SKILL.md  # 检查字数
-cat .test/iteration-N/convergence.json | jq .  # 验证收敛
+rg "semantic_anchor|last_valid|convergence_streak|max_iterations" skills/<skill-name>/SKILL.md
 ```
